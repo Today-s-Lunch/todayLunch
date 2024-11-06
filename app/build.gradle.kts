@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.utils.`is`
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +9,8 @@ android {
     namespace = "com.example.todaylunch"
     compileSdk = 34
     viewBinding.isEnabled = true
+    dataBinding.isEnabled = true
+
     defaultConfig {
         applicationId = "com.example.todaylunch"
         minSdk = 24
