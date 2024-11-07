@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="25dp"
+    android:height="40dp"
+    android:viewportWidth="25"
+    android:viewportHeight="40">
+    <path
+        android:pathData="M0.644,18.445L18.446,0.644C19.304,-0.215 20.697,-0.215 21.555,0.644L23.632,2.72C24.489,3.578 24.49,4.966 23.635,5.825L9.526,20L23.634,34.174C24.49,35.034 24.488,36.422 23.631,37.28L21.554,39.356C20.696,40.215 19.303,40.215 18.445,39.356L0.644,21.554C-0.215,20.696 -0.215,19.303 0.644,18.445Z"
+        android:fillColor="#CCFF2600"/> <!-- 클릭 시 색상 -->
+</vector>
