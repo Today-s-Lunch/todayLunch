@@ -92,7 +92,7 @@
         android:layout_marginBottom="222dp" />
 
     <include
-        layout="@layout/underbar"
+        layout="@layout/item_underbar"
         android:id="@+id/underbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
