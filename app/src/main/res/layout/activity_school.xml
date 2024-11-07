@@ -1,15 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".SchoolActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary" />
 
-</LinearLayout>
+    <!-- 하단에 Fragment가 교체될 부분 -->
+
+    <TextView
+        android:id="@+id/schooltoday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="오늘의         은"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/textView6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="409dp"
+        android:layout_height="481dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginBottom="61dp"
+        android:layout_weight="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView6">
+
+    </FrameLayout>
+
+    <Switch
+        android:id="@+id/switchToggle"
+        android:layout_width="250dp"
+        android:layout_height="35dp"
+        android:textOff="명신관 식당"
+        android:textOn="순헌관식당"
+        android:thumb="@drawable/schoolswitch_thumb"
+        android:track="@drawable/schoolswitch_track"
+        app:layout_constraintBaseline_toBaselineOf="@+id/toggletext1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/toggletext1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="14dp"
+        android:text="순헌관 식당"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/switchToggle"
+        app:layout_constraintTop_toBottomOf="@+id/date" />
+
+    <TextView
+        android:id="@+id/toggletext2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="명신관 식당"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/switchToggle"
+        app:layout_constraintEnd_toEndOf="@+id/textView6"
+        app:layout_constraintStart_toEndOf="@+id/textView6" />
+
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="261dp"
+        android:layout_height="24dp"
+        android:layout_marginBottom="56dp"
+        android:gravity="center"
+        android:text="date"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/fragmentContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView6" />
+
+    <include
+        android:id="@+id/underbar"
+        layout="@layout/underbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="36dp"
+        android:layout_marginBottom="92dp"
+        android:text="학식"
+        android:textColor="#FA6A50"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/fragmentContainer"
+        app:layout_constraintEnd_toEndOf="@+id/schooltoday"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

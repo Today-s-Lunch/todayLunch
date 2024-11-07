@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FFD245"/>
+    <size android:width="125dp" android:height="35dp"/>
+    <corners android:radius="15dp"/>
+    <text android:text="명신관 식당" android:textSize="15sp" android:textColor="#000000"/>
+</shape>
