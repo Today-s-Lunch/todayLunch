@@ -28,7 +28,7 @@
         android:id="@+id/arrow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/school_arrow"
+        android:src="@drawable/random_arrow"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -41,7 +41,7 @@
         android:id="@+id/Food"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/school_border"
+        android:background="@drawable/random_border"
         android:gravity="center"
         android:text="달볶이"
         android:textSize="36sp"
@@ -90,5 +90,14 @@
         android:layout_marginTop="30dp"
         android:layout_marginEnd="140dp"
         android:layout_marginBottom="222dp" />
+
+    <include
+        layout="@layout/underbar"
+        android:id="@+id/underbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
