@@ -88,20 +88,7 @@
         app:layout_constraintTop_toTopOf="@+id/imageView"
         app:srcCompat="@drawable/searchtxt" />
 
-    <Button
-        android:id="@+id/searchopen"
-        android:layout_width="305dp"
-        android:layout_height="55dp"
-        android:layout_marginStart="48dp"
-        android:layout_marginEnd="58dp"
-        android:layout_marginBottom="12dp"
-        android:backgroundTint="@android:color/transparent"
-        app:layout_constraintBottom_toTopOf="@+id/imageView23"
-        app:layout_constraintEnd_toEndOf="@+id/imageView"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+
 
     <FrameLayout
         android:id="@+id/fragmentContainer"
@@ -151,6 +138,21 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </LinearLayout>
+    <Button
+        android:id="@+id/searchopen"
+        android:layout_width="305dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="58dp"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="@+id/imageView23"
+        app:layout_constraintEnd_toEndOf="@+id/imageView"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

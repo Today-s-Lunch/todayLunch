@@ -2,6 +2,7 @@ package com.example.todaylunch
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -12,7 +13,8 @@ import com.example.todaylunch.databinding.ActivityStartBinding
 
 
 class StartActivity : AppCompatActivity() {
-    private lateinit var gestureDetector: GestureDetectorCompat
+    private lateinit var gestureDetector: GestureDetector
+
     lateinit var binding : ActivityStartBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,20 +30,21 @@ class StartActivity : AppCompatActivity() {
         }
 
 
-        gestureDetector = GestureDetectorCompat(this, object : GestureDetector.SimpleOnGestureListener() {
-
-            // onScroll 메서드를 올바르게 오버라이드
-            override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onScroll(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                distanceX: Float,
+                distanceY: Float
+            ): Boolean {
                 if (distanceY > 0) {
                     hideFragment()  // 위로 스크롤하면 Fragment를 숨김
                     return true
                 }
-                return super.onScroll(e1, e2, distanceX, distanceY)
+                return false
             }
         })
-        binding.searchopen.setOnClickListener {
 
-        }
         binding.searchopen.setOnClickListener {
             showFragment()
         }
@@ -60,6 +63,7 @@ class StartActivity : AppCompatActivity() {
         binding.topFragmentContainer.visibility = View.VISIBLE
         val slideDown = AnimationUtils.loadAnimation(this, R.anim.slide_down)
         binding.topFragmentContainer.startAnimation(slideDown)
+        Log.d("sat","blue")
     }
 
     // Hide fragment with slide up animation
