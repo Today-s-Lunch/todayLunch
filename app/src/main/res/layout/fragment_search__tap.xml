@@ -1,25 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/nestedScrollView"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <LinearLayout
+        android:id="@+id/top_sheet"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="400dp"
+        android:orientation="vertical"
+        android:background="@color/white"
+       >
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Scroll up to dismiss this fragment"
-            android:textSize="18sp"/>
+        <!-- Content of your sliding view -->
 
-        <Button
-            android:id="@+id/closeFragmentButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Close Fragment"/>
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

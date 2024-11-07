@@ -30,50 +30,28 @@ class StartActivity : AppCompatActivity() {
         }
 
 
-        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onScroll(
-                e1: MotionEvent?,
-                e2: MotionEvent,
-                distanceX: Float,
-                distanceY: Float
-            ): Boolean {
-                if (distanceY > 0) {
-                    hideFragment()  // 위로 스크롤하면 Fragment를 숨김
-                    return true
-                }
-                return false
-            }
-        })
-
+        val HOME = Intent(this, StartActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
         binding.searchopen.setOnClickListener {
-            showFragment()
+            Search_Tap().show(supportFragmentManager, "TopSheetDialog")
         }
 
-        // Close fragment button click
-        binding.closeFragmentButton.setOnClickListener {
-            hideFragment()
+        binding.underbarMapinclude.homeButton.setOnClickListener {
+            startActivity(HOME)
         }
 
-        // Listen for touch events to detect scroll
-        binding.nestedScrollView.setOnTouchListener { v, event ->
-            gestureDetector.onTouchEvent(event)
+        binding.underbarMapinclude.mapButton.setOnClickListener {
+            startActivity(HOME )
         }
-    }
-    private fun showFragment() {
-        binding.topFragmentContainer.visibility = View.VISIBLE
-        val slideDown = AnimationUtils.loadAnimation(this, R.anim.slide_down)
-        binding.topFragmentContainer.startAnimation(slideDown)
-        Log.d("sat","blue")
+
+        binding.underbarMapinclude.myPageButton.setOnClickListener {
+            startActivity(HOME)
+        }
+
+
     }
 
-    // Hide fragment with slide up animation
-    private fun hideFragment() {
-        val slideUp = AnimationUtils.loadAnimation(this, R.anim.slide_up)
-        binding.topFragmentContainer.startAnimation(slideUp)
-        binding.topFragmentContainer.postDelayed({
-            binding.topFragmentContainer.visibility = View.GONE
-        }, 300)  // Wait for animation to complete before hiding
-    }
 
 
 }
