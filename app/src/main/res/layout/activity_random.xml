@@ -39,7 +39,7 @@
 
     <TextView
         android:id="@+id/Food"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:background="@drawable/random_border"
         android:gravity="center"
@@ -53,9 +53,9 @@
         android:layout_marginStart="56dp"
         android:layout_marginTop="23dp"
         android:layout_marginEnd="56dp"
-        android:paddingLeft="100dp"
+        android:paddingLeft="20dp"
         android:paddingTop="30dp"
-        android:paddingRight="100dp"
+        android:paddingRight="20dp"
         android:paddingBottom="30dp" />`
 
     <TextView
