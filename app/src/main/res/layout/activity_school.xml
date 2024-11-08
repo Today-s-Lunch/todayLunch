@@ -83,7 +83,7 @@
 
     <include
         android:id="@+id/underbar"
-        layout="@layout/underbar"
+        layout="@layout/item_underbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
