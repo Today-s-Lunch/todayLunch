@@ -8,6 +8,8 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import androidx.appcompat.app.AppCompatActivity
 import com.example.todaylunch.databinding.ActivityRandomBinding
+import com.google.firebase.Firebase
+import com.google.firebase.database.database
 import kotlin.random.Random
 
 class RandomActivity : AppCompatActivity() {
@@ -49,32 +51,19 @@ class RandomActivity : AppCompatActivity() {
     }
 
     private fun showRandomRestaurant() {
+        // Firebase 데이터베이스 레퍼런스 생성
+        val db = Firebase.database.reference
 
-        // 임시 식당 리스트 (식당 번호와 이름 쌍으로 구성)
-        val restaurantList = listOf(
-            Pair(1, "달볶이"),
-            Pair(2, "샤브21"),
-            Pair(3, "육쌈냉면"),
-            Pair(4, "빨봉"),
-            Pair(5, "돈카춘"),
-            Pair(6, "행복은 간장밥")
-        )
+        // 1부터 6까지 랜덤 번호 생성
+        val randomId = Random.nextInt(1, 97)
 
-        // 1부터 6까지 랜덤 번호 생성 (Firebase 연결 전 임시 사용)
-        val randomId = Random.nextInt(1, 7)
-
-        // 해당 번호의 식당을 리스트에서 찾아서 이름을 가져오기
-        val randomRestaurant = restaurantList.find { it.first == randomId }?.second ?: "식당 정보 없음"
-        binding.Food.text = randomRestaurant
-
-        // Firebase 연결 시(예시)
-        // Firebase에 ID 쿼리로 보내서 식당 이름 받아오기
-        // val db = Firebase.database.reference
-        // db.child("restaurants").child(randomId.toString()).get().addOnSuccessListener { snapshot ->
-        //     val restaurantName = snapshot.child("name").value.toString()
-        //     binding.Food.text = restaurantName
-        // }.addOnFailureListener {
-        //     binding.Food.text = "식당 정보를 불러오지 못했습니다."
-        // }
+        // Firebase에서 랜덤 번호에 해당하는 식당 이름 가져오기
+        db.child("13").get().addOnSuccessListener { snapshot ->
+            var restaurantName = snapshot.child("Name").value?.toString() ?: "식당 정보 없음"
+            restaurantName = restaurantName.replace(" ", "\n") // 공백을 줄바꿈으로 변경
+            binding.Food.text = restaurantName
+        }.addOnFailureListener {
+            binding.Food.text = "식당 정보를 불러오지 못했습니다."
+        }
     }
 }

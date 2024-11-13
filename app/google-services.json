@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "371947196794",
+    "project_id": "todays-lunch-aa71c",
+    "storage_bucket": "todays-lunch-aa71c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:371947196794:android:41235406c84f09e1b506c3",
+        "android_client_info": {
+          "package_name": "com.example.todaylunch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfDSwAL_TOuaY_7harOtUw6t0g6BFV_N0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
