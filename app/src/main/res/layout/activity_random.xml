@@ -43,7 +43,6 @@
         android:layout_height="wrap_content"
         android:background="@drawable/random_border"
         android:gravity="center"
-        android:text="달볶이"
         android:textSize="36sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/How"

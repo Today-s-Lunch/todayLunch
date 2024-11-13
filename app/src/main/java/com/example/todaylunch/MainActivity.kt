@@ -8,12 +8,15 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import androidx.appcompat.app.AppCompatActivity
 import com.example.todaylunch.databinding.ActivityMainBinding
+import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+
 class MainActivity : AppCompatActivity() {
     val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+    private var mFirebaseAnalytics: FirebaseAnalytics? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root) //화면에 레이아웃이 표시
@@ -36,5 +39,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this@MainActivity, StartActivity::class.java))
             finish()
         }
+
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
     }
 }
