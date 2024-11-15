@@ -3,118 +3,111 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="150dp">
+    android:layout_height="wrap_content"
+    android:padding="8dp">
 
-
+    <!-- Restaurant Image with rounded corners -->
     <ImageView
         android:id="@+id/res_photo"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-
-
-        android:layout_marginStart="18dp"
-        android:layout_marginEnd="17dp"
-        app:layout_constraintBottom_toTopOf="@+id/cooking_time2"
-        app:layout_constraintEnd_toStartOf="@+id/res_name"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginEnd="16dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/rounded_background"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/cooking_time2"
         tools:srcCompat="@tools:sample/avatars" />
 
+    <!-- Restaurant Name with added margin -->
     <TextView
         android:id="@+id/res_name"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-
-
-        android:layout_marginTop="25dp"
-        android:layout_marginEnd="179dp"
-        android:text="TextView"
-        android:textSize="23sp"
+        android:layout_marginStart="8dp"
+        android:text="아리랑"
+        android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/res_photo"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/cooking_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="11dp"
-        android:layout_marginBottom="1dp"
-        android:text="조리시간"
         android:textColor="#000000"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/avg_waiting2"
-        app:layout_constraintStart_toEndOf="@+id/cooking_time2"
-        app:layout_constraintTop_toBottomOf="@+id/res_name" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/res_photo"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Cooking Time Label -->
+
+    <!-- Cooking Time Value -->
     <TextView
         android:id="@+id/cooking_time2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginStart="8dp"
         android:text="조리시간"
         android:textColor="#BBBBBB"
         android:textSize="12sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/res_name"
-        app:layout_constraintTop_toTopOf="@+id/cooking_time" />
+        app:layout_constraintStart_toEndOf="@id/res_photo"
+        app:layout_constraintTop_toBottomOf="@id/res_name" />
 
+    <!-- Average Waiting Time Label -->
     <TextView
-        android:id="@+id/avg_cost"
+        android:id="@+id/cooking_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
-        android:layout_marginEnd="48dp"
-        android:text="시간"
+        android:layout_marginStart="8dp"
+        android:text="30초"
         android:textColor="#000000"
+        android:textSize="12sp"
         android:textStyle="bold"
-        app:layout_constraintBaseline_toBaselineOf="@+id/avg_cost2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/avg_cost2" />
+        app:layout_constraintBaseline_toBaselineOf="@id/cooking_time2"
+        app:layout_constraintStart_toEndOf="@id/cooking_time2" />
 
     <TextView
         android:id="@+id/avg_cost2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
-        android:layout_marginEnd="12dp"
         android:text="평균 대기시간"
-        android:textColor="#bbbbbb"
+        android:textColor="#BBBBBB"
         android:textSize="12sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/cooking_time"
-        app:layout_constraintEnd_toStartOf="@+id/avg_cost"
-        app:layout_constraintStart_toEndOf="@+id/avg_waiting" />
+        app:layout_constraintTop_toBottomOf="@id/res_name"
+        app:layout_constraintStart_toEndOf="@id/cooking_time"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Average Waiting Time Value -->
+
+    <!-- Average Cost Label -->
+
+    <!-- Average Cost Value -->
     <TextView
-        android:id="@+id/avg_waiting"
+        android:id="@+id/avg_cost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
-        android:layout_marginEnd="49dp"
-        android:text="가격"
+        android:layout_marginStart="8dp"
+        android:text="0분"
         android:textColor="#000000"
+        android:textSize="12sp"
         android:textStyle="bold"
-        app:layout_constraintBaseline_toBaselineOf="@+id/avg_waiting2"
-        app:layout_constraintEnd_toStartOf="@+id/avg_cost2"
-        app:layout_constraintStart_toEndOf="@+id/cooking_time2" />
+        app:layout_constraintBaseline_toBaselineOf="@id/avg_cost2"
+        app:layout_constraintStart_toEndOf="@id/avg_cost2" />
 
     <TextView
         android:id="@+id/avg_waiting2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
-        android:layout_marginEnd="11dp"
-        android:layout_marginBottom="13dp"
+        android:layout_marginStart="8dp"
         android:text="가격대"
         android:textColor="#BBBBBB"
         android:textSize="12sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/avg_waiting"
-        app:layout_constraintStart_toStartOf="@+id/cooking_time2"
-        app:layout_constraintTop_toBottomOf="@+id/cooking_time" />
+        app:layout_constraintStart_toEndOf="@id/res_photo"
+        app:layout_constraintTop_toBottomOf="@id/cooking_time2" />
 
+    <TextView
+        android:id="@+id/avg_waiting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="5000원 이하"
+        android:textColor="#000000"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@id/avg_waiting2"
+        app:layout_constraintStart_toEndOf="@id/avg_waiting2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 delay(1000)  // 1초 간격으로 텍스트 업데이트
             }
-            startActivity(Intent(this@MainActivity, Restaurant_List::class.java))
+            startActivity(Intent(this@MainActivity, StartActivity::class.java))
             finish()
         }
 

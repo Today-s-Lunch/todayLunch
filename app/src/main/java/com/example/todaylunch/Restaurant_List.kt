@@ -11,11 +11,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todaylunch.databinding.ActivityRandomBinding
 import com.example.todaylunch.databinding.ActivityRestaurantListBinding
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -73,13 +76,20 @@ class Restaurant_List : AppCompatActivity() {
         override fun onBindViewHolder(holder: RestaurantViewHolder, position: Int) {
             val restaurant = restaurantList[position]
             holder.nameTextView.text = restaurant.Name
+
+            holder.nameTextView.textSize = 16f // 기본 폰트 크기
+
             holder.costTextView.text = restaurant.avgcost
+                .replace("over", "원 이상")
+                .replace("under", "원 이하")
+
             holder.waitTextView.text = convertTime(restaurant.waittime)
             holder.cookTextView.text = convertTime(restaurant.maketime)
             Glide.with(holder.imageView.context)
-              .load(restaurant.photourl)
-              .override(300, 300)// 이미지 URL을 전달
-              .into(holder.imageView)  // 이미지 로드 후 ImageView에 설정
+                .load(restaurant.photourl)
+                .override(100, 100)
+                .transform(CenterCrop(), RoundedCorners(20)) // 필요시 모서리 둥글게 처리
+                .into(holder.imageView)
 
 
         }
@@ -101,7 +111,6 @@ class Restaurant_List : AppCompatActivity() {
                     if (restaurant != null) {
                         rList.add(restaurant)
                         Log.d("Firebase", "Restaurant added: ${restaurant.Name}")
-
                     }
                 }
 
@@ -109,6 +118,13 @@ class Restaurant_List : AppCompatActivity() {
                 val adapter = RestaurantAdapter(rList)
                 binding.restaurantList.layoutManager = LinearLayoutManager(this@Restaurant_List)
                 binding.restaurantList.adapter = adapter
+
+                // 구분선 추가
+                val divider = DividerItemDecoration(
+                    binding.restaurantList.context,
+                    LinearLayoutManager.VERTICAL
+                )
+                binding.restaurantList.addItemDecoration(divider)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -130,7 +146,8 @@ class Restaurant_List : AppCompatActivity() {
         val type: String="",
         val maketime: String="",
         val avgcost: String="",
-        val Number: String=""
+        val Number: String="",
+        val MenuKeywords: String = ""
     )
     }
 
