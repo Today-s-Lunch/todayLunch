@@ -58,7 +58,7 @@ class RandomActivity : AppCompatActivity() {
         val randomId = Random.nextInt(1, 97)
 
         // Firebase에서 랜덤 번호에 해당하는 식당 이름 가져오기
-        db.child("13").get().addOnSuccessListener { snapshot ->
+        db.child(randomId.toString()).get().addOnSuccessListener { snapshot ->
             var restaurantName = snapshot.child("Name").value?.toString() ?: "식당 정보 없음"
             restaurantName = restaurantName.replace(" ", "\n") // 공백을 줄바꿈으로 변경
             binding.Food.text = restaurantName

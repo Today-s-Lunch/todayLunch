@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="150dp">
+
+
+    <ImageView
+        android:id="@+id/res_photo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+
+
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="17dp"
+        app:layout_constraintBottom_toTopOf="@+id/cooking_time2"
+        app:layout_constraintEnd_toStartOf="@+id/res_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/cooking_time2"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/res_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="179dp"
+        android:text="TextView"
+        android:textSize="23sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/res_photo"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/cooking_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="11dp"
+        android:layout_marginBottom="1dp"
+        android:text="조리시간"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/avg_waiting2"
+        app:layout_constraintStart_toEndOf="@+id/cooking_time2"
+        app:layout_constraintTop_toBottomOf="@+id/res_name" />
+
+    <TextView
+        android:id="@+id/cooking_time2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="조리시간"
+        android:textColor="#BBBBBB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/res_name"
+        app:layout_constraintTop_toTopOf="@+id/cooking_time" />
+
+    <TextView
+        android:id="@+id/avg_cost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginEnd="48dp"
+        android:text="시간"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/avg_cost2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/avg_cost2" />
+
+    <TextView
+        android:id="@+id/avg_cost2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginEnd="12dp"
+        android:text="평균 대기시간"
+        android:textColor="#bbbbbb"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/cooking_time"
+        app:layout_constraintEnd_toStartOf="@+id/avg_cost"
+        app:layout_constraintStart_toEndOf="@+id/avg_waiting" />
+
+    <TextView
+        android:id="@+id/avg_waiting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginEnd="49dp"
+        android:text="가격"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/avg_waiting2"
+        app:layout_constraintEnd_toStartOf="@+id/avg_cost2"
+        app:layout_constraintStart_toEndOf="@+id/cooking_time2" />
+
+    <TextView
+        android:id="@+id/avg_waiting2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginEnd="11dp"
+        android:layout_marginBottom="13dp"
+        android:text="가격대"
+        android:textColor="#BBBBBB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/avg_waiting"
+        app:layout_constraintStart_toStartOf="@+id/cooking_time2"
+        app:layout_constraintTop_toBottomOf="@+id/cooking_time" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
