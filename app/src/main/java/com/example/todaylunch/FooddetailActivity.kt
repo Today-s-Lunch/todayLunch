@@ -16,6 +16,7 @@ import com.google.firebase.database.database
 
 class FooddetailActivity : AppCompatActivity() {
     val binding: ActivityFooddetailBinding by lazy { ActivityFooddetailBinding.inflate(layoutInflater) }
+    private var isScraped = false  // 스크랩 상태를 추적하는 변수
 
     data class Restaurant(
         val Number: String = "",
@@ -58,6 +59,18 @@ class FooddetailActivity : AppCompatActivity() {
 
         binding.underbar.myPageButton.setOnClickListener {
             startActivity(goToStartActivity)
+        }
+
+        // 스크랩 버튼 클릭 리스너
+        binding.scrapButton.setOnClickListener {
+            isScraped = !isScraped  // 상태 토글
+
+            // 상태에 따라 이미지 변경
+            if (isScraped) {
+                binding.scrapButton.setImageResource(R.drawable.scrap_on)
+            } else {
+                binding.scrapButton.setImageResource(R.drawable.scrap_off)
+            }
         }
     }
 
