@@ -20,13 +20,24 @@ import com.example.todaylunch.databinding.LoadingScreenBinding
 class StartActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetector
     private lateinit var loadingDialog: LoadingDialog
+    private lateinit var searchFragment: Search_Tap
+    private var isSearchVisible = false
 
-    lateinit var binding : ActivityStartBinding
+    lateinit var binding: ActivityStartBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityStartBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        searchFragment = Search_Tap()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.fragmentContainer, searchFragment!!)
+            .hide(searchFragment!!) // 처음에는 숨기기
+            .commit()
 
+        // 검색 버튼 클릭 시 검색 탭 열기/닫기
+        binding.searchopen.setOnClickListener {
+            toggleSearchFragment()
+        }
         loadingDialog = LoadingDialog(this)
         binding.random.setOnClickListener {
             // 로딩 다이얼로그 표시
@@ -48,39 +59,56 @@ class StartActivity : AppCompatActivity() {
         val HOME = Intent(this, StartActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
-        binding.searchopen.setOnClickListener {
-            Search_Tap().show(supportFragmentManager, "TopSheetDialog")
-        }
+
 
         binding.underbarMapinclude.homeButton.setOnClickListener {
             startActivity(HOME)
         }
 
         binding.underbarMapinclude.mapButton.setOnClickListener {
-            startActivity(HOME )
+            startActivity(HOME)
         }
 
         binding.underbarMapinclude.myPageButton.setOnClickListener {
             startActivity(HOME)
         }
     }
-}
 
-class LoadingDialog(context: Context) {
-    private val dialog: Dialog = Dialog(context)
-    private val binding: LoadingScreenBinding = LoadingScreenBinding.inflate(LayoutInflater.from(context))
+    private fun toggleSearchFragment() {
+        val transaction = supportFragmentManager.beginTransaction()
 
-    init {
-        dialog.setContentView(binding.root)
-        dialog.setCancelable(false)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        if (isSearchVisible) {
+            // 검색 탭 숨기기
+            transaction.hide(searchFragment).commitNow()
+            isSearchVisible = false
+        } else {
+            // 검색 탭 표시
+            if (!searchFragment.isAdded) { // 이미 추가되어 있는지 확인
+                transaction.add(R.id.fragmentContainer, searchFragment).commitNow()
+            } else {
+                transaction.show(searchFragment).commitNow()
+            }
+            isSearchVisible = true
+        }
     }
 
-    fun show() {
-        dialog.show()
-    }
+    class LoadingDialog(context: Context) {
+        private val dialog: Dialog = Dialog(context)
+        private val binding: LoadingScreenBinding =
+            LoadingScreenBinding.inflate(LayoutInflater.from(context))
 
-    fun dismiss() {
-        dialog.dismiss()
+        init {
+            dialog.setContentView(binding.root)
+            dialog.setCancelable(false)
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        }
+
+        fun show() {
+            dialog.show()
+        }
+
+        fun dismiss() {
+            dialog.dismiss()
+        }
     }
 }

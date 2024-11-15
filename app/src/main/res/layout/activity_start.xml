@@ -10,6 +10,7 @@
     tools:layout_editor_absoluteY="14dp">
 
 
+
     <ImageView
         android:id="@+id/imageView24"
         android:layout_width="334dp"
@@ -117,6 +118,12 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,49 +13,102 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import android.view.WindowManager // 이 부분 추가
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.animation.Animation
+import android.view.animation.TranslateAnimation
+import androidx.fragment.app.Fragment
+import com.example.todaylunch.databinding.FragmentSearchTapBinding
 
-class Search_Tap : DialogFragment() {
+class Search_Tap : Fragment() {
+
+    private var _binding: FragmentSearchTapBinding? = null
+    private val binding get() = _binding
     private lateinit var gestureDetector: GestureDetector
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_search__tap, container, false)
-        gestureDetector = GestureDetector(context, SwipeGestureListener())
-        view?.setOnTouchListener { _, event ->
-            gestureDetector.onTouchEvent(event)
-            true
-        }
-        return view
+        _binding = FragmentSearchTapBinding.inflate(inflater, container, false)
+        setupGestureDetector()
+        return _binding?.root
     }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.apply {
-            setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
-            setGravity(Gravity.TOP) // 상단에 위치하도록 설정
-            setWindowAnimations(R.style.TopSlideAnimation) // 애니메이션 설정
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
-
-        private inner class SwipeGestureListener : GestureDetector.SimpleOnGestureListener() {
-            private val SWIPE_THRESHOLD = 100
-            private val SWIPE_VELOCITY_THRESHOLD = 100
-
+    private fun setupGestureDetector() {
+        gestureDetector = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(
                 e1: MotionEvent?,
                 e2: MotionEvent,
                 velocityX: Float,
                 velocityY: Float
             ): Boolean {
-                val diffY = e2.y - (e1?.y ?: 0f)
-                if (diffY < -SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-                    dismiss() // 위로 스와이프하면 다이얼로그 닫기
-                    return true
+                if (e1 != null && e2 != null) {
+                    if (e1.y - e2.y > 100 && velocityY < -1000) {
+                        closeSearch()
+                        return true
+                    }
                 }
                 return false
             }
+        })
+
+        // GestureDetector를 검색 컨테이너에 연결
+        binding?.searchContainer?.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            true
         }
+    }
+
+    private fun closeSearch() {
+        binding?.let { binding ->
+            slideUp(binding.searchContainer) {
+                parentFragmentManager.beginTransaction()
+                    .remove(this@Search_Tap)
+                    .commit()
+            }
+        }
+    }
+
+    private fun slideUp(view: View, onEnd: (() -> Unit)? = null) {
+        val animate = TranslateAnimation(
+            0f, 0f, 0f, -view.height.toFloat()
+        )
+        animate.duration = 500
+        animate.fillAfter = true
+        view.startAnimation(animate)
+        animate.setAnimationListener(object : android.view.animation.Animation.AnimationListener {
+            override fun onAnimationStart(animation: android.view.animation.Animation?) {}
+            override fun onAnimationEnd(animation: android.view.animation.Animation?) {
+                view.visibility = View.GONE
+                onEnd?.invoke()
+            }
+
+            override fun onAnimationRepeat(animation: android.view.animation.Animation?) {}
+        })
+    }
+
+    fun toggleSearch() {
+        binding?.let { binding ->
+            if (binding.searchContainer.visibility == View.VISIBLE) {
+                closeSearch()
+            } else {
+                slideDown(binding.searchContainer)
+            }
+        }
+    }
+
+    private fun slideDown(view: View) {
+        view.visibility = View.VISIBLE
+        val animate = TranslateAnimation(
+            0f, 0f, -view.height.toFloat(), 0f
+        )
+        animate.duration = 500
+        animate.fillAfter = true
+        view.startAnimation(animate)
+    }
     }
 

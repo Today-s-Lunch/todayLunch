@@ -1,5 +1,6 @@
 package com.example.todaylunch
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -39,6 +40,21 @@ class Restaurant_List : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(binding.root)
         loadRestaurants()
+        binding.underbar.backButton.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed() // 이전 페이지로 이동
+        }
+
+        val goToStartActivity = Intent(this, StartActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+
+        binding.underbar.homeButton.setOnClickListener {
+            startActivity(goToStartActivity)
+        }
+
+        binding.underbar.myPageButton.setOnClickListener {
+            startActivity(goToStartActivity)
+        }
     }
 
     inner class RestaurantAdapter(private val restaurantList: List<Restaurant>) :
