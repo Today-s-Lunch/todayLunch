@@ -65,10 +65,6 @@ class StartActivity : AppCompatActivity() {
         binding.underbarMapinclude.mapButton.setOnClickListener {
             startActivity(HOME)
         }
-
-        binding.underbarMapinclude.myPageButton.setOnClickListener {
-            startActivity(HOME)
-        }
     }
 
 

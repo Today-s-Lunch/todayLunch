@@ -14,6 +14,7 @@ import kotlin.random.Random
 
 class RandomActivity : AppCompatActivity() {
     val binding: ActivityRandomBinding by lazy { ActivityRandomBinding.inflate(layoutInflater) }
+    private var currentRestaurantId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,16 +55,26 @@ class RandomActivity : AppCompatActivity() {
         // Firebase 데이터베이스 레퍼런스 생성
         val db = Firebase.database.reference
 
-        // 1부터 6까지 랜덤 번호 생성
-        val randomId = Random.nextInt(1, 97)
+        // 1부터 97까지 랜덤 번호 생성
+        val randomId = Random.nextInt(1, 97).toString()  // 문자열로 변환
+        currentRestaurantId = randomId  // 현재 ID 저장
 
         // Firebase에서 랜덤 번호에 해당하는 식당 이름 가져오기
         db.child(randomId.toString()).get().addOnSuccessListener { snapshot ->
             var restaurantName = snapshot.child("Name").value?.toString() ?: "식당 정보 없음"
             restaurantName = restaurantName.replace(" ", "\n") // 공백을 줄바꿈으로 변경
             binding.Food.text = restaurantName
+
+            // 데이터 로드 완료 후 클릭 리스너 설정
+            binding.see.setOnClickListener {
+                val intent = Intent(this, FooddetailActivity::class.java).apply {
+                    putExtra("restaurantId", randomId)  // ID를 인텐트에 추가
+                }
+                startActivity(intent)
+            }
         }.addOnFailureListener {
             binding.Food.text = "식당 정보를 불러오지 못했습니다."
+            currentRestaurantId = null
         }
     }
 }

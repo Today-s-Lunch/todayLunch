@@ -55,7 +55,7 @@
         android:paddingLeft="20dp"
         android:paddingTop="30dp"
         android:paddingRight="20dp"
-        android:paddingBottom="30dp" />`
+        android:paddingBottom="30dp" />
 
     <TextView
         android:id="@+id/How"
@@ -72,13 +72,15 @@
         android:layout_marginStart="135dp"
         android:layout_marginTop="36dp"
         android:layout_marginEnd="135dp"
-        android:layout_marginBottom="35dp" />`
+        android:layout_marginBottom="35dp" />
 
-    <TextView
+    <Button
         android:id="@+id/see"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="식당 보러가기 >"
+        android:textColor="@color/black"
+        android:backgroundTint="@android:color/transparent"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
