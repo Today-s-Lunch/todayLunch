@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape>
+            <solid android:color="@android:color/white" /> <!-- 선택된 버튼 배경색 -->
+            <stroke
+                android:width="0.2dp"
+                android:color="#F01818" /> <!-- 선택된 버튼 테두리 색상 -->
+            <corners android:radius="16dp" /> <!-- 둥근 모서리 -->
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid android:color="@android:color/white" /> <!-- 기본 배경색 (흰색) -->
+            <stroke
+                android:width="0.2dp"
+                android:color="#F01818" /> <!-- 기본 테두리 색상 -->
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+</selector>

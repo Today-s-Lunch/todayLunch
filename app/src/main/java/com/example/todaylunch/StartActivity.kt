@@ -21,12 +21,20 @@ class StartActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetector
     private lateinit var loadingDialog: LoadingDialog
 
-    lateinit var binding : ActivityStartBinding
+    private var isSearchVisible = false
+
+    lateinit var binding: ActivityStartBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityStartBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
+        // 검색 버튼 클릭 시 검색 탭 열기/닫기
+        binding.searchopen.setOnClickListener {
+            val intent = Intent(this, SearchActivity::class.java)
+            startActivity(intent)
+        }
         loadingDialog = LoadingDialog(this)
         binding.random.setOnClickListener {
             // 로딩 다이얼로그 표시
@@ -48,35 +56,36 @@ class StartActivity : AppCompatActivity() {
         val HOME = Intent(this, StartActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
-        binding.searchopen.setOnClickListener {
-            Search_Tap().show(supportFragmentManager, "TopSheetDialog")
-        }
+
 
         binding.underbarMapinclude.homeButton.setOnClickListener {
             startActivity(HOME)
         }
 
         binding.underbarMapinclude.mapButton.setOnClickListener {
-            startActivity(HOME )
+            startActivity(HOME)
         }
     }
-}
 
-class LoadingDialog(context: Context) {
-    private val dialog: Dialog = Dialog(context)
-    private val binding: LoadingScreenBinding = LoadingScreenBinding.inflate(LayoutInflater.from(context))
 
-    init {
-        dialog.setContentView(binding.root)
-        dialog.setCancelable(false)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-    }
 
-    fun show() {
-        dialog.show()
-    }
+    class LoadingDialog(context: Context) {
+        private val dialog: Dialog = Dialog(context)
+        private val binding: LoadingScreenBinding =
+            LoadingScreenBinding.inflate(LayoutInflater.from(context))
 
-    fun dismiss() {
-        dialog.dismiss()
+        init {
+            dialog.setContentView(binding.root)
+            dialog.setCancelable(false)
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        }
+
+        fun show() {
+            dialog.show()
+        }
+
+        fun dismiss() {
+            dialog.dismiss()
+        }
     }
 }
