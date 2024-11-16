@@ -20,7 +20,7 @@ import com.example.todaylunch.databinding.LoadingScreenBinding
 class StartActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetector
     private lateinit var loadingDialog: LoadingDialog
-    private lateinit var searchFragment: Search_Tap
+
     private var isSearchVisible = false
 
     lateinit var binding: ActivityStartBinding
@@ -28,15 +28,12 @@ class StartActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityStartBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        searchFragment = Search_Tap()
-        supportFragmentManager.beginTransaction()
-            .add(R.id.fragmentContainer, searchFragment!!)
-            .hide(searchFragment!!) // 처음에는 숨기기
-            .commit()
+
 
         // 검색 버튼 클릭 시 검색 탭 열기/닫기
         binding.searchopen.setOnClickListener {
-            toggleSearchFragment()
+            val intent = Intent(this, SearchActivity::class.java)
+            startActivity(intent)
         }
         loadingDialog = LoadingDialog(this)
         binding.random.setOnClickListener {
@@ -74,23 +71,7 @@ class StartActivity : AppCompatActivity() {
         }
     }
 
-    private fun toggleSearchFragment() {
-        val transaction = supportFragmentManager.beginTransaction()
 
-        if (isSearchVisible) {
-            // 검색 탭 숨기기
-            transaction.hide(searchFragment).commitNow()
-            isSearchVisible = false
-        } else {
-            // 검색 탭 표시
-            if (!searchFragment.isAdded) { // 이미 추가되어 있는지 확인
-                transaction.add(R.id.fragmentContainer, searchFragment).commitNow()
-            } else {
-                transaction.show(searchFragment).commitNow()
-            }
-            isSearchVisible = true
-        }
-    }
 
     class LoadingDialog(context: Context) {
         private val dialog: Dialog = Dialog(context)
