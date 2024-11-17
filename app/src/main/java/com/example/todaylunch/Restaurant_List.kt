@@ -15,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.room.util.query
+
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -38,12 +38,17 @@ import java.net.URL
 import kotlin.math.*
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.AdapterView
 
 
 class Restaurant_List : AppCompatActivity() {
     private val binding: ActivityRestaurantListBinding by lazy {
         ActivityRestaurantListBinding.inflate(layoutInflater)
     }
+    private lateinit var recyclerViewAdapter: RestaurantAdapter
+    private var restaurantList: MutableList<Restaurant> = mutableListOf()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var userLat: Double = 0.0
     private var userLon: Double = 0.0
@@ -54,6 +59,7 @@ class Restaurant_List : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        setupRecyclerView()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
 
@@ -80,6 +86,9 @@ class Restaurant_List : AppCompatActivity() {
         Log.d("SelectedFiltersDebug", "Filters: $selectedFilters") // 추가된 로그
         checkLocationPermissionAndFetchLocation()
         loadRestaurants()
+        val sortSpinner: Spinner = findViewById(R.id.sortSpinner)
+        setupSortSpinner(sortSpinner)
+
 
         // 검색 버튼 클릭 시 검색 탭 열기/닫기
         binding.searchopen.setOnClickListener {
@@ -100,6 +109,45 @@ class Restaurant_List : AppCompatActivity() {
             startActivity(Intent(this, StartActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             })
+        }
+    }
+    private fun setupRecyclerView() {
+        val recyclerView: RecyclerView = findViewById(R.id.restaurant_list)
+        recyclerViewAdapter = RestaurantAdapter(restaurantList)
+        recyclerView.adapter = recyclerViewAdapter
+    }
+
+    private fun setupSortSpinner(sortSpinner: Spinner) {
+        // 정렬 옵션 리스트
+        val sortOptions = listOf("이름 순", "정확도 순", "별점 높은 순")
+
+        // Spinner와 연결할 ArrayAdapter 생성
+        val spinnerAdapter = ArrayAdapter(
+            this, // Context
+            android.R.layout.simple_spinner_item, // 기본 Spinner 항목 레이아웃
+            sortOptions
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) // 드롭다운 레이아웃 설정
+        }
+
+        // Spinner에 어댑터 설정
+        sortSpinner.adapter = spinnerAdapter
+
+        // Spinner 아이템 선택 이벤트 처리
+        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                when (position) {
+                    //0 -> restaurantList.sortBy { it.name } // 이름 순 정렬
+                    //1 -> restaurantList.sortBy { it.accuracy } // 정확도 순 정렬
+                    //2 -> restaurantList.sortByDescending { it.rating } // 별점 높은 순 정렬
+                }
+                // RecyclerView 업데이트
+                recyclerViewAdapter.notifyDataSetChanged()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // 선택되지 않았을 때 처리 (필요 시)
+            }
         }
     }
 
@@ -155,6 +203,7 @@ class Restaurant_List : AppCompatActivity() {
             } ?: timeString
         }
     }
+
     private fun checkLocationPermissionAndFetchLocation() {
         val isTesting = true // 테스트 모드 플래그
         if (isTesting) {
