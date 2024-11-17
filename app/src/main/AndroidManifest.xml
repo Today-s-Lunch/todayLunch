@@ -19,7 +19,9 @@
             android:exported="false" />
         <activity
             android:name=".Restaurant_List"
-            android:name=".FooddetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Restaurant_Detail"
             android:exported="false" />
         <activity
             android:name=".SchoolActivity"
