@@ -11,7 +11,8 @@
     <LinearLayout
         android:id="@+id/searchBar"
         android:layout_width="0dp"
-        android:layout_height="53dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         android:background="@drawable/searchbar"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -174,9 +175,25 @@
             app:cornerRadius="16dp"
             app:strokeColor="#F01818"
             app:strokeWidth="2dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/typeVietnam"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="80dp"
+            android:layout_height="36dp"
+            android:layout_margin="5dp"
+            android:backgroundTint="@android:color/white"
+            android:text="아시안"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="16dp"
+            app:strokeColor="#F01818"
+            app:strokeWidth="2dp" />
     </com.google.android.flexbox.FlexboxLayout>
 
     <!-- 거리 레이블 -->
+
     <TextView
         android:id="@+id/distanceLabel"
         android:layout_width="wrap_content"
