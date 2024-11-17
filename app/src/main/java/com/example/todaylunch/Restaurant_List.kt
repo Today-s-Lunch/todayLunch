@@ -13,9 +13,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.util.query
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.example.todaylunch.databinding.ActivityRestaurantDetailBinding
 import com.example.todaylunch.databinding.ActivityRestaurantListBinding
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.internal.ViewUtils.dpToPx
@@ -30,6 +32,7 @@ class Restaurant_List : AppCompatActivity() {
         ActivityRestaurantListBinding.inflate(layoutInflater)
     }
     private lateinit var selectedFilters: Map<String, String>
+    private var searchText: String = "" // 검색어를 저장할 변수
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,8 +46,33 @@ class Restaurant_List : AppCompatActivity() {
             "avgPrice" to intent.getStringExtra("avgPrice").orEmpty(),
             "waitTime" to intent.getStringExtra("waitTime").orEmpty() // 대기시간 추가
         ).filter { it.value.isNotEmpty() }
+
+        // 입력한 검색어
+        searchText = intent.getStringExtra("searchText").orEmpty()
+
+        // 검색어가 있으면 검색바에 표시, 없으면 기본 텍스트 표시
+        if (searchText.isNotEmpty()) {
+            binding.searchtxt.text = searchText
+        } else {
+            binding.searchtxt.text = "조건을 설정해주세요"
+        }
+
         Log.d("SelectedFiltersDebug", "Filters: $selectedFilters") // 추가된 로그
         loadRestaurants()
+
+        // 검색 버튼 클릭 시 검색 탭 열기/닫기
+        binding.searchopen.setOnClickListener {
+            val intent = Intent(this, SearchActivity::class.java).apply {
+                // 검색어 전달
+                putExtra("currentSearchText", searchText)
+                putExtra("type", selectedFilters["type"].orEmpty())
+                putExtra("distance", selectedFilters["distance"].orEmpty())
+                putExtra("cookingTime", selectedFilters["cookingTime"].orEmpty())
+                putExtra("avgPrice", selectedFilters["avgPrice"].orEmpty())
+                putExtra("waitTime", selectedFilters["waitTime"].orEmpty())
+            }
+            startActivity(intent)
+        }
 
         binding.underbar.backButton.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
         binding.underbar.homeButton.setOnClickListener {
@@ -81,6 +109,14 @@ class Restaurant_List : AppCompatActivity() {
                 .load(restaurant.photourl)
                 .transform(CenterCrop(), RoundedCorners(20))
                 .into(holder.imageView)
+
+            holder.itemView.setOnClickListener {
+                val restaurantId = (restaurant.Number.toIntOrNull() ?: 1) - 1
+                val intent = Intent(holder.itemView.context, Restaurant_Detail::class.java).apply {
+                    putExtra("restaurantId", restaurantId.toString())  // Number 필드를 ID로 사용
+                }
+                holder.itemView.context.startActivity(intent)
+            }
         }
 
         override fun getItemCount() = restaurantList.size
@@ -112,7 +148,9 @@ class Restaurant_List : AppCompatActivity() {
                             filterByDistance(restaurant) &&
                             filterByCookingTime(restaurant) &&
                             filterByPrice(restaurant)&&
-                            filterByWaitTime(restaurant) // 대기시간 필터 추가
+                            filterByWaitTime(restaurant) && // 대기시간 필터 추가
+                            // 검색어 필터 추가
+                            filterBySearchText(restaurant)
                 }
                 Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
 
@@ -248,6 +286,22 @@ class Restaurant_List : AppCompatActivity() {
         // 레스토랑의 가격대가 필터 조건보다 같거나 낮은 순위인지 확인
         return restaurantRank <= filterRank
     }
+
+    // 검색어 필터링 함수 추가
+    private fun filterBySearchText(restaurant: Restaurant): Boolean {
+        // 검색어가 비어있으면 true 반환 (필터링하지 않음)
+        if (searchText.isEmpty()) return true
+
+        // 식당 이름 확인
+        if (restaurant.Name.contains(searchText)) return true
+
+        // 메뉴 키워드를 공백으로 분리하여 각각 확인
+        val menuKeywords = restaurant.menuKeywords.split(" ")
+        return menuKeywords.any { keyword ->
+            keyword.contains(searchText)
+        }
+    }
+
     private fun displayFilters(selectedFilters: Map<String, String>) {
         val flexboxLayout = binding.filterConditions
         flexboxLayout.removeAllViews() // 기존 필터 초기화
@@ -334,6 +388,6 @@ class Restaurant_List : AppCompatActivity() {
         val maketime: String = "",
         val avgcost: String = "",
         val Number: String = "",
-        val MenuKeywords: String = ""
+        val menuKeywords: String = ""
     )
 }

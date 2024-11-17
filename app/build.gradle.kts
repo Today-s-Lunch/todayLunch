@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.recyclerview)
     implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation(libs.androidx.room.ktx)
 
     // Glide 컴파일러 의존성 추가
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
