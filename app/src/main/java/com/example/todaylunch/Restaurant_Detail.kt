@@ -10,12 +10,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.example.todaylunch.databinding.ActivityFooddetailBinding
+import com.example.todaylunch.databinding.ActivityRestaurantDetailBinding
 import com.google.firebase.Firebase
 import com.google.firebase.database.database
 
-class FooddetailActivity : AppCompatActivity() {
-    val binding: ActivityFooddetailBinding by lazy { ActivityFooddetailBinding.inflate(layoutInflater) }
+class Restaurant_Detail : AppCompatActivity() {
+    val binding: ActivityRestaurantDetailBinding by lazy { ActivityRestaurantDetailBinding.inflate(layoutInflater) }
     private var isScraped = false  // 스크랩 상태를 추적하는 변수
 
     data class Restaurant(
@@ -127,7 +127,7 @@ class FooddetailActivity : AppCompatActivity() {
 
     companion object {
         fun start(context: Context, restaurantId: String) {
-            val intent = Intent(context, ActivityFooddetailBinding::class.java).apply {
+            val intent = Intent(context, ActivityRestaurantDetailBinding::class.java).apply {
                 putExtra("restaurantId", restaurantId)
             }
             context.startActivity(intent)

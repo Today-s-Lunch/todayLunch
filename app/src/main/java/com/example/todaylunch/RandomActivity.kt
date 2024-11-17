@@ -67,7 +67,7 @@ class RandomActivity : AppCompatActivity() {
 
             // 데이터 로드 완료 후 클릭 리스너 설정
             binding.see.setOnClickListener {
-                val intent = Intent(this, FooddetailActivity::class.java).apply {
+                val intent = Intent(this, Restaurant_Detail::class.java).apply {
                     putExtra("restaurantId", randomId)  // ID를 인텐트에 추가
                 }
                 startActivity(intent)
