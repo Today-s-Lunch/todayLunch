@@ -29,7 +29,8 @@ class Restaurant_Detail : AppCompatActivity() {
         val maketime: String = "",
         val waittime: String = "",
         val link: String = "",
-        val photourl: String = ""
+        val photourl: String = "",
+        val menuKeywords: String = ""
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,14 +87,13 @@ class Restaurant_Detail : AppCompatActivity() {
         return when (price) {
             "5000under" -> "5,000원 이하"
             "10000under" -> "10,000원 이하"
-            "10000uner" -> "10,000원 이하"
             "10000over" -> "10,000원 이상"
             else -> price
         }
     }
 
     private fun loadRestaurantData(restaurantId: String) {
-        val db = Firebase.database.reference
+        val db = Firebase.database.reference.child("restaurants")
 
         db.child(restaurantId).get().addOnSuccessListener { snapshot ->
             val restaurant = snapshot.getValue(Restaurant::class.java)

@@ -9,6 +9,7 @@ import android.text.style.ForegroundColorSpan
 import androidx.appcompat.app.AppCompatActivity
 import com.example.todaylunch.databinding.ActivityRandomBinding
 import com.google.firebase.Firebase
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
 import kotlin.random.Random
 
@@ -53,7 +54,7 @@ class RandomActivity : AppCompatActivity() {
 
     private fun showRandomRestaurant() {
         // Firebase 데이터베이스 레퍼런스 생성
-        val db = Firebase.database.reference
+        val db = Firebase.database.reference.child("restaurants")
 
         // 1부터 97까지 랜덤 번호 생성
         val randomId = Random.nextInt(1, 97).toString()  // 문자열로 변환
