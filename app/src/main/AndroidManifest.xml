@@ -9,6 +9,7 @@
     <meta-data
         android:name="com.google.android.geo.API_KEY"
         android:value="AIzaSyAYeZk5HR1t7izfsHrPM35RXHi_SiZZWUo" />
+
     <application
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
@@ -20,6 +21,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TodayLunch"
         tools:targetApi="31">
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SignupActivity"
+            android:exported="false" />
         <activity
             android:name=".SearchActivity"
             android:exported="false" />
