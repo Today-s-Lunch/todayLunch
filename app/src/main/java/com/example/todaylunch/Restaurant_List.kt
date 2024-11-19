@@ -43,6 +43,7 @@ import android.widget.Spinner
 import android.widget.AdapterView
 
 
+
 class Restaurant_List : AppCompatActivity() {
     private val binding: ActivityRestaurantListBinding by lazy {
         ActivityRestaurantListBinding.inflate(layoutInflater)
@@ -151,7 +152,7 @@ class Restaurant_List : AppCompatActivity() {
         }
     }
 
-    inner class RestaurantAdapter(private val restaurantList: List<Restaurant>) :
+    inner class RestaurantAdapter(private var restaurantList: List<Restaurant>) :
         RecyclerView.Adapter<RestaurantAdapter.RestaurantViewHolder>() {
 
         inner class RestaurantViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -348,14 +349,23 @@ class Restaurant_List : AppCompatActivity() {
         }
 
         return withContext(Dispatchers.IO) {
-            val walkingTime = getWalkingTimeFromGoogleMapsAPI(
+            val walkingTime = getWalkingTimeFromOSRM(
                 originLat = userLat,
                 originLon = userLon,
                 destLat = restaurant.Latitude.toDoubleOrNull() ?: 0.0,
                 destLon = restaurant.Longitude.toDoubleOrNull() ?: 0.0
             )
-            Log.d("WalkingTime", "Restaurant: ${restaurant.Name}, Walking Time: $walkingTime minutes")
-            walkingTime <= maxDistanceMinutes
+
+            Log.d("WalkingTimeDebug", "Restaurant: ${restaurant.Name}, Calculated Walking Time: $walkingTime minutes")
+
+            if (walkingTime == Int.MAX_VALUE) {
+                Log.e("WalkingTimeDebug", "Failed to calculate walking time for ${restaurant.Name}")
+                return@withContext true // 실패 시 기본적으로 포함
+            }
+
+            val result = walkingTime <= maxDistanceMinutes
+            Log.d("WalkingTimeFilter", "Restaurant: ${restaurant.Name}, Pass Filter: $result")
+            result
         }
     }
     private fun getWalkingTimeFromGoogleMapsAPI( originLat: Double,
@@ -595,4 +605,44 @@ class Restaurant_List : AppCompatActivity() {
         val type: String = "",
         val Number: String = ""
     )
+    //ORSM이용??
+    private fun getWalkingTimeFromOSRM(
+        originLat: Double,
+        originLon: Double,
+        destLat: Double,
+        destLon: Double
+    ): Int {
+        val baseUrl = "http://router.project-osrm.org/route/v1/foot"
+        val url = "$baseUrl/$originLon,$originLat;$destLon,$destLat?overview=false&steps=false"
+
+        return try {
+            Log.d("OSRM API Request", "URL: $url")
+            val response = URL(url).readText() // API 호출
+            Log.d("OSRM API Response", "Response: $response")
+
+            val json = JSONObject(response)
+
+            // OSRM 응답에서 경로 정보 가져오기
+            val routes = json.getJSONArray("routes")
+            if (routes.length() > 0) {
+                // 첫 번째 경로의 legs[0] → duration 값 추출
+                val legs = routes.getJSONObject(0).getJSONArray("legs")
+                if (legs.length() > 0) {
+                    val duration = legs.getJSONObject(0).getDouble("duration") // 초 단위
+                    Log.d("OSRM", "Duration: ${duration / 60} minutes")
+                    (duration / 60).toInt() // 초 → 분 변환 후 반환
+                } else {
+                    Log.e("OSRM", "No legs found in route")
+                    Int.MAX_VALUE
+                }
+            } else {
+                Log.e("OSRM", "No routes found")
+                Int.MAX_VALUE
+            }
+        } catch (e: Exception) {
+            Log.e("OSRM", "Error fetching walking time: ${e.message}")
+            Int.MAX_VALUE // 실패 시 기본값 반환
+        }
+    }
+
 }
