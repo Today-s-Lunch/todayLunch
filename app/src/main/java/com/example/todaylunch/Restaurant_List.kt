@@ -10,33 +10,59 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.room.util.query
+
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.todaylunch.databinding.ActivityRestaurantDetailBinding
 import com.example.todaylunch.databinding.ActivityRestaurantListBinding
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.internal.ViewUtils.dpToPx
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.URL
 import kotlin.math.*
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.AdapterView
+
 
 class Restaurant_List : AppCompatActivity() {
     private val binding: ActivityRestaurantListBinding by lazy {
         ActivityRestaurantListBinding.inflate(layoutInflater)
     }
+    private lateinit var recyclerViewAdapter: RestaurantAdapter
+    private var restaurantList: MutableList<Restaurant> = mutableListOf()
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var userLat: Double = 0.0
+    private var userLon: Double = 0.0
+    private val API_KEY = "AIzaSyAYeZk5HR1t7izfsHrPM35RXHi_SiZZWUo"
     private lateinit var selectedFilters: Map<String, String>
     private var searchText: String = "" // 검색어를 저장할 변수
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        setupRecyclerView()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+
 
         // 필터값 가져오기
         selectedFilters = mapOf(
@@ -58,7 +84,11 @@ class Restaurant_List : AppCompatActivity() {
         }
 
         Log.d("SelectedFiltersDebug", "Filters: $selectedFilters") // 추가된 로그
+        checkLocationPermissionAndFetchLocation()
         loadRestaurants()
+        val sortSpinner: Spinner = findViewById(R.id.sortSpinner)
+        setupSortSpinner(sortSpinner)
+
 
         // 검색 버튼 클릭 시 검색 탭 열기/닫기
         binding.searchopen.setOnClickListener {
@@ -79,6 +109,45 @@ class Restaurant_List : AppCompatActivity() {
             startActivity(Intent(this, StartActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             })
+        }
+    }
+    private fun setupRecyclerView() {
+        val recyclerView: RecyclerView = findViewById(R.id.restaurant_list)
+        recyclerViewAdapter = RestaurantAdapter(restaurantList)
+        recyclerView.adapter = recyclerViewAdapter
+    }
+
+    private fun setupSortSpinner(sortSpinner: Spinner) {
+        // 정렬 옵션 리스트
+        val sortOptions = listOf("이름 순", "정확도 순", "별점 높은 순")
+
+        // Spinner와 연결할 ArrayAdapter 생성
+        val spinnerAdapter = ArrayAdapter(
+            this, // Context
+            android.R.layout.simple_spinner_item, // 기본 Spinner 항목 레이아웃
+            sortOptions
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) // 드롭다운 레이아웃 설정
+        }
+
+        // Spinner에 어댑터 설정
+        sortSpinner.adapter = spinnerAdapter
+
+        // Spinner 아이템 선택 이벤트 처리
+        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                when (position) {
+                    //0 -> restaurantList.sortBy { it.name } // 이름 순 정렬
+                    //1 -> restaurantList.sortBy { it.accuracy } // 정확도 순 정렬
+                    //2 -> restaurantList.sortByDescending { it.rating } // 별점 높은 순 정렬
+                }
+                // RecyclerView 업데이트
+                recyclerViewAdapter.notifyDataSetChanged()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // 선택되지 않았을 때 처리 (필요 시)
+            }
         }
     }
 
@@ -135,30 +204,97 @@ class Restaurant_List : AppCompatActivity() {
         }
     }
 
+    private fun checkLocationPermissionAndFetchLocation() {
+        val isTesting = true // 테스트 모드 플래그
+        if (isTesting) {
+            setMockLocation()
+        } else {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                fetchUserLocation()
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    LOCATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+    private fun setMockLocation() { // 수동위치
+        userLat = 37.545169 // 숙대좌표
+        userLon = 126.964268
+        Log.d("MockLocation", "Lat: $userLat, Lon: $userLon")
+        loadRestaurants()
+    }
+    private fun fetchUserLocation(){
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        userLat = location.latitude
+                        userLon = location.longitude
+                        Log.d("UserLocation", "Lat: $userLat, Lon: $userLon")
+                        loadRestaurants() // 위치 정보를 기반으로 식당 목록 가져오기
+                    } else {
+                        Log.e("UserLocation", "Unable to fetch location")
+                    }
+                }.addOnFailureListener { e ->
+                    Log.e("UserLocation", "Failed to get location: ${e.message}")
+                }
+            } else {
+                Log.e("Permission", "Permission not granted")
+            }
+        } catch (e: SecurityException) {
+            Log.e("Permission", "SecurityException: ${e.message}")
+        }
+    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 권한이 허용된 경우 위치 정보 가져오기
+                fetchUserLocation()
+            } else {
+                // 권한이 거부된 경우 로그 표시
+                Log.e("Permission", "Location permission denied")
+            }
+        }
+    }
+
+
+
     private fun loadRestaurants() {
+        if (!::selectedFilters.isInitialized) {
+            Log.e("Error", "selectedFilters is not initialized")
+            return
+        }
+
         displayFilters(selectedFilters)
-        val db = FirebaseDatabase.getInstance().reference
+        val db = FirebaseDatabase.getInstance().getReference("restaurants")
         db.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val restaurants = snapshot.children.mapNotNull {
-                    it.getValue(Restaurant::class.java)
+                val restaurants = snapshot.children.mapNotNull { restaurantSnapshot ->
+                    restaurantSnapshot.getValue(Restaurant::class.java)
                 }
-                val filteredList = restaurants.filter { restaurant ->
-                    filterByType(restaurant) &&
-                            filterByDistance(restaurant) &&
-                            filterByCookingTime(restaurant) &&
-                            filterByPrice(restaurant)&&
-                            filterByWaitTime(restaurant) && // 대기시간 필터 추가
-                            // 검색어 필터 추가
-                            filterBySearchText(restaurant)
-                }
-                Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
+                // 필터 적용 및 RecyclerView 업데이트
+                lifecycleScope.launch {
+                    val filteredList = restaurants.filter { restaurant ->
+                        filterByType(restaurant) &&
+                                filterByCookingTime(restaurant) &&
+                                filterByPrice(restaurant) &&
+                                filterByWaitTime(restaurant) &&
+                                filterByDistanceAsync(restaurant) &&
+                                filterBySearchText(restaurant)
+                    }
+                    Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
 
-                val adapter = RestaurantAdapter(filteredList)
-                binding.restaurantList.apply {
-                    layoutManager = LinearLayoutManager(this@Restaurant_List)
-                    this.adapter = adapter
-                    addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+                    val adapter = RestaurantAdapter(filteredList)
+
+                    updateRecyclerView(filteredList)
                 }
             }
 
@@ -166,6 +302,15 @@ class Restaurant_List : AppCompatActivity() {
                 Log.e("FirebaseError", error.message)
             }
         })
+    }
+
+    private fun updateRecyclerView(filteredList: List<Restaurant>) {
+        val adapter = RestaurantAdapter(filteredList)
+        binding.restaurantList.apply {
+            layoutManager = LinearLayoutManager(this@Restaurant_List)
+            this.adapter = adapter
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        }
     }
 
     private fun filterByType(restaurant: Restaurant): Boolean {
@@ -177,8 +322,9 @@ class Restaurant_List : AppCompatActivity() {
             "중식" to "Chinese",
             "양식" to "Western",
             "일식" to "Japanese",
-            "분식" to "Snack",
-            "간편식" to "Light"
+            "분식" to "Bunsik",
+            "간편식" to "Light",
+            "아시안" to "Vietnamese"
         )
 
         val mappedType = typeMapping[typeFilter] ?: return true
@@ -192,24 +338,83 @@ class Restaurant_List : AppCompatActivity() {
         return restaurant.type.trim().equals(mappedType, ignoreCase = true)
     }
 
-    private fun filterByDistance(restaurant: Restaurant): Boolean {
+    private suspend fun filterByDistanceAsync(restaurant: Restaurant): Boolean {
         val distanceFilter = selectedFilters["distance"] ?: return true
-        val maxDistanceKm = when (distanceFilter) {
-            "도보 5분" -> 0.4
-            "도보 10분" -> 0.8
-            "도보 15분" -> 1.2
-            else -> Double.MAX_VALUE
+        val maxDistanceMinutes = when (distanceFilter) {
+            "도보 5분" -> 5
+            "도보 10분" -> 10
+            "도보 15분" -> 15
+            else -> Int.MAX_VALUE
         }
 
-        val distance = calculateDistance(
-            userLat = 37.5451132,
-            userLon = 126.9663465,
-            targetLat = restaurant.Latitude.toDoubleOrNull() ?: 0.0,
-            targetLon = restaurant.Longitude.toDoubleOrNull() ?: 0.0
-        )
-
-        return distance <= maxDistanceKm
+        return withContext(Dispatchers.IO) {
+            val walkingTime = getWalkingTimeFromGoogleMapsAPI(
+                originLat = userLat,
+                originLon = userLon,
+                destLat = restaurant.Latitude.toDoubleOrNull() ?: 0.0,
+                destLon = restaurant.Longitude.toDoubleOrNull() ?: 0.0
+            )
+            Log.d("WalkingTime", "Restaurant: ${restaurant.Name}, Walking Time: $walkingTime minutes")
+            walkingTime <= maxDistanceMinutes
+        }
     }
+    private fun getWalkingTimeFromGoogleMapsAPI( originLat: Double,
+                                                 originLon: Double,
+                                                 destLat: Double,
+                                                 destLon: Double
+    ): Int {
+        return try {
+            val url = URL(
+                "https://maps.googleapis.com/maps/api/distancematrix/json?origins=$originLat,$originLon&destinations=$destLat,$destLon&mode=walking&key=$API_KEY"
+            )
+            Log.d("DistanceMatrixAPI Request", url.toString())
+            val response = url.readText()
+            val json = JSONObject(response)
+            val duration = json
+                .getJSONArray("rows")
+                .getJSONObject(0)
+                .getJSONArray("elements")
+                .getJSONObject(0)
+                .getJSONObject("duration")
+                .getInt("value") // Duration in seconds
+            Log.d("DistanceMatrixAPI Response", json.toString())
+            duration / 60 // Convert to minutes
+        } catch (e: Exception) {
+            Log.e("DistanceMatrixAPI", "Error: ${e.message}")
+            Int.MAX_VALUE
+        }
+    }/*originLat: Double, originLon: Double, destLat: Double, destLon: Double): Int {
+        return try {
+            // URL 생성
+            val url = URL(
+                "https://maps.googleapis.com/maps/api/directions/json?origin=$originLat,$originLon&destination=$destLat,$destLon&mode=walking&key=$API_KEY"
+            )
+            Log.d("API Request URL", url.toString())
+
+
+            // API 호출 및 응답 받기
+            val response = url.readText()
+            val json = JSONObject(response)
+
+            // JSON 응답에서 경로(route) 및 다리(legs) 정보 추출
+            val routes = json.optJSONArray("routes") ?: throw Exception("No routes found in response")
+            val legs = routes.optJSONObject(0)?.optJSONArray("legs") ?: throw Exception("No legs found in route")
+            val duration = legs.optJSONObject(0)?.optJSONObject("duration")?.optInt("value")
+                ?: throw Exception("Duration not found in response")
+
+            // 초 단위 시간을 분으로 변환하여 반환
+            duration / 60 // Convert to minutes
+        } catch (e: Exception) {
+            // 로그 출력 및 디폴트 값 반환
+            Log.e("GoogleMapsAPI", "Error fetching walking time: ${e.message}")
+            Int.MAX_VALUE
+        }*/
+
+
+    companion object {
+        const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+    }
+
 
     private fun calculateDistance(userLat: Double, userLon: Double, targetLat: Double, targetLon: Double): Double {
         if (userLat == 0.0 || userLon == 0.0 || targetLat == 0.0 || targetLon == 0.0) {
@@ -378,16 +583,16 @@ class Restaurant_List : AppCompatActivity() {
     }
     data class Restaurant(
         val Name: String = "",
-        val waittime: String = "",
-        val Longitude: String = "",
-        val Latitude: String = "",
-        val photourl: String = "",
-        val link: String = "",
         val Address: String = "",
-        val type: String = "",
-        val maketime: String = "",
+        val Latitude: String = "",
+        val Longitude: String = "",
         val avgcost: String = "",
-        val Number: String = "",
-        val menuKeywords: String = ""
+        val link: String = "",
+        val maketime: String = "",
+        val waittime: String = "",
+        val menuKeywords: String = "",
+        val photourl: String = "",
+        val type: String = "",
+        val Number: String = ""
     )
 }
