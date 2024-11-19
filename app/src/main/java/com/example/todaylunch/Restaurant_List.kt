@@ -274,29 +274,27 @@ class Restaurant_List : AppCompatActivity() {
         }
 
         displayFilters(selectedFilters)
-        val db = FirebaseDatabase.getInstance().reference
+        val db = FirebaseDatabase.getInstance().getReference("restaurants")
         db.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val restaurants = snapshot.children.mapNotNull {
-                    it.getValue(Restaurant::class.java)
+                val restaurants = snapshot.children.mapNotNull { restaurantSnapshot ->
+                    restaurantSnapshot.getValue(Restaurant::class.java)
                 }
+                // 필터 적용 및 RecyclerView 업데이트
                 lifecycleScope.launch {
                     val filteredList = restaurants.filter { restaurant ->
                         filterByType(restaurant) &&
                                 filterByCookingTime(restaurant) &&
                                 filterByPrice(restaurant) &&
                                 filterByWaitTime(restaurant) &&
-                                filterByDistanceAsync(restaurant)&&
+                                filterByDistanceAsync(restaurant) &&
                                 filterBySearchText(restaurant)
                     }
                     Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
 
                     val adapter = RestaurantAdapter(filteredList)
-                    binding.restaurantList.apply {
-                        layoutManager = LinearLayoutManager(this@Restaurant_List)
-                        this.adapter = adapter
-                        addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
-                    }
+
+                    updateRecyclerView(filteredList)
                 }
             }
 
@@ -304,6 +302,15 @@ class Restaurant_List : AppCompatActivity() {
                 Log.e("FirebaseError", error.message)
             }
         })
+    }
+
+    private fun updateRecyclerView(filteredList: List<Restaurant>) {
+        val adapter = RestaurantAdapter(filteredList)
+        binding.restaurantList.apply {
+            layoutManager = LinearLayoutManager(this@Restaurant_List)
+            this.adapter = adapter
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        }
     }
 
     private fun filterByType(restaurant: Restaurant): Boolean {
@@ -576,16 +583,16 @@ class Restaurant_List : AppCompatActivity() {
     }
     data class Restaurant(
         val Name: String = "",
-        val waittime: String = "",
-        val Longitude: String = "",
-        val Latitude: String = "",
-        val photourl: String = "",
-        val link: String = "",
         val Address: String = "",
-        val type: String = "",
-        val maketime: String = "",
+        val Latitude: String = "",
+        val Longitude: String = "",
         val avgcost: String = "",
-        val Number: String = "",
-        val menuKeywords: String = ""
+        val link: String = "",
+        val maketime: String = "",
+        val waittime: String = "",
+        val menuKeywords: String = "",
+        val photourl: String = "",
+        val type: String = "",
+        val Number: String = ""
     )
 }
