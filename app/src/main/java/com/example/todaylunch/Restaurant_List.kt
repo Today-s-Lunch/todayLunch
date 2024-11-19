@@ -91,6 +91,7 @@ class Restaurant_List : AppCompatActivity() {
         setupSortSpinner(sortSpinner)
 
 
+
         // 검색 버튼 클릭 시 검색 탭 열기/닫기
         binding.searchopen.setOnClickListener {
             val intent = Intent(this, SearchActivity::class.java).apply {
@@ -119,16 +120,15 @@ class Restaurant_List : AppCompatActivity() {
     }
 
     private fun setupSortSpinner(sortSpinner: Spinner) {
-        // 정렬 옵션 리스트
-        val sortOptions = listOf("이름 순", "정확도 순", "별점 높은 순")
+        val sortOptions = listOf("이름 순", "거리 순")
 
         // Spinner와 연결할 ArrayAdapter 생성
         val spinnerAdapter = ArrayAdapter(
-            this, // Context
-            android.R.layout.simple_spinner_item, // 기본 Spinner 항목 레이아웃
+            this,
+            android.R.layout.simple_spinner_item,
             sortOptions
         ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) // 드롭다운 레이아웃 설정
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
 
         // Spinner에 어댑터 설정
@@ -136,24 +136,42 @@ class Restaurant_List : AppCompatActivity() {
 
         // Spinner 아이템 선택 이벤트 처리
         sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 when (position) {
-                    //0 -> restaurantList.sortBy { it.name } // 이름 순 정렬
-                    //1 -> restaurantList.sortBy { it.accuracy } // 정확도 순 정렬
-                    //2 -> restaurantList.sortByDescending { it.rating } // 별점 높은 순 정렬
+                    0 -> {
+                        restaurantList.sortBy { it.Name }
+                        Log.d("SortingDebug", "Sorted by Name: ${restaurantList.map { it.Name }}")
+                    }
+                    1 -> {
+                        restaurantList.sortBy {
+                            val distance = calculateDistance(
+                                userLat, userLon,
+                                it.Latitude.toDoubleOrNull() ?: 0.0,
+                                it.Longitude.toDoubleOrNull() ?: 0.0
+                            )
+                            Log.d("DistanceDebug", "Restaurant: ${it.Name}, Distance: $distance")
+                            distance
+                        }
+                        Log.d("SortingDebug", "Sorted by Distance: ${restaurantList.map { it.Name }}")
+                    }
                 }
-                // RecyclerView 업데이트
-                recyclerViewAdapter.notifyDataSetChanged()
+                recyclerViewAdapter.updateList(restaurantList) // 어댑터에 정렬된 리스트 반영
+                Log.d("AdapterDebug", "RecyclerView updated with sorted list")
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // 선택되지 않았을 때 처리 (필요 시)
-            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
     inner class RestaurantAdapter(private var restaurantList: List<Restaurant>) :
         RecyclerView.Adapter<RestaurantAdapter.RestaurantViewHolder>() {
+        fun updateList(newList: List<Restaurant>) {
+
+            restaurantList = newList // 새로운 리스트로 덮어씌움
+            notifyDataSetChanged() // 변경 사항 알림
+        }
+
 
         inner class RestaurantViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val nameTextView: TextView = itemView.findViewById(R.id.res_name)
@@ -288,7 +306,7 @@ class Restaurant_List : AppCompatActivity() {
                                 filterByCookingTime(restaurant) &&
                                 filterByPrice(restaurant) &&
                                 filterByWaitTime(restaurant) &&
-                                filterByDistanceAsync(restaurant) &&
+                                filterByDistance(restaurant) &&
                                 filterBySearchText(restaurant)
                     }
                     Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
@@ -309,6 +327,7 @@ class Restaurant_List : AppCompatActivity() {
         val adapter = RestaurantAdapter(filteredList)
         binding.restaurantList.apply {
             layoutManager = LinearLayoutManager(this@Restaurant_List)
+
             this.adapter = adapter
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
@@ -339,7 +358,7 @@ class Restaurant_List : AppCompatActivity() {
         return restaurant.type.trim().equals(mappedType, ignoreCase = true)
     }
 
-    private suspend fun filterByDistanceAsync(restaurant: Restaurant): Boolean {
+    /*private suspend fun filterByDistanceAsync(restaurant: Restaurant): Boolean {
         val distanceFilter = selectedFilters["distance"] ?: return true
         val maxDistanceMinutes = when (distanceFilter) {
             "도보 5분" -> 5
@@ -367,7 +386,7 @@ class Restaurant_List : AppCompatActivity() {
             Log.d("WalkingTimeFilter", "Restaurant: ${restaurant.Name}, Pass Filter: $result")
             result
         }
-    }
+    }*/
     private fun getWalkingTimeFromGoogleMapsAPI( originLat: Double,
                                                  originLon: Double,
                                                  destLat: Double,
@@ -426,11 +445,37 @@ class Restaurant_List : AppCompatActivity() {
     }
 
 
-    private fun calculateDistance(userLat: Double, userLon: Double, targetLat: Double, targetLon: Double): Double {
-        if (userLat == 0.0 || userLon == 0.0 || targetLat == 0.0 || targetLon == 0.0) {
-            return Double.MAX_VALUE
+
+    private fun filterByDistance(restaurant: Restaurant): Boolean {
+        val distanceFilter = selectedFilters["distance"] ?: return true // 필터 조건 없으면 무조건 통과
+        val maxDistanceMinutes = when (distanceFilter) {
+            "도보 5분" -> 5
+            "도보 10분" -> 10
+            "도보 15분" -> 15
+            else -> Int.MAX_VALUE
         }
-        val R = 6371e3 // meters
+
+        // 거리 계산
+        val distance = calculateDistance(
+            userLat, userLon,
+            restaurant.Latitude.toDoubleOrNull() ?: 0.0,
+            restaurant.Longitude.toDoubleOrNull() ?: 0.0
+        )
+
+        // 도보 시간 계산 (신호등 대기 포함)
+        val walkingTime = calculateWalkingTime(distance)
+        Log.d("DistanceFilter", "Restaurant: ${restaurant.Name}, Distance: $distance meters, Walking Time: $walkingTime minutes")
+
+        // 최대 거리 조건을 만족하는지 반환
+        return walkingTime <= maxDistanceMinutes
+    }
+    private fun calculateDistance(
+        userLat: Double,
+        userLon: Double,
+        targetLat: Double,
+        targetLon: Double
+    ): Double {
+        val R = 6371e3 // 지구 반지름 (미터)
         val φ1 = Math.toRadians(userLat)
         val φ2 = Math.toRadians(targetLat)
         val Δφ = Math.toRadians(targetLat - userLat)
@@ -438,7 +483,20 @@ class Restaurant_List : AppCompatActivity() {
 
         val a = sin(Δφ / 2).pow(2) + cos(φ1) * cos(φ2) * sin(Δλ / 2).pow(2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        return (R * c) / 1000 // kilometers
+
+        return R * c // 미터 단위 거리 반환
+    }
+
+    private fun calculateWalkingTime(distanceInMeters: Double): Int {
+        val walkingSpeed = 1.25 // m/s (평균 보행 속도)
+
+        // 신호등 대기 시간 계산 (100m당 1개의 교차로 가정)
+        val intersectionCount = (distanceInMeters / 100).toInt()
+        val trafficLightDelay = intersectionCount * 30 // 교차로당 30초 대기 가정
+
+        // 도보 시간 계산
+        val walkingTimeInSeconds = (distanceInMeters / walkingSpeed).toInt() + trafficLightDelay
+        return (walkingTimeInSeconds / 60).toInt() // 분 단위로 반환
     }
 
     private fun filterByCookingTime(restaurant: Restaurant): Boolean {
@@ -606,7 +664,7 @@ class Restaurant_List : AppCompatActivity() {
         val Number: String = ""
     )
     //ORSM이용??
-    private fun getWalkingTimeFromOSRM(
+    /*private fun getWalkingTimeFromOSRM(
         originLat: Double,
         originLon: Double,
         destLat: Double,
@@ -643,6 +701,6 @@ class Restaurant_List : AppCompatActivity() {
             Log.e("OSRM", "Error fetching walking time: ${e.message}")
             Int.MAX_VALUE // 실패 시 기본값 반환
         }
-    }
+    }*/
 
 }
