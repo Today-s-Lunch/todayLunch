@@ -29,7 +29,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.loginBtn.setOnClickListener {
-            // SignUpActivity로 이동
+            // StartActivity 이동
             val intent = Intent(this, StartActivity::class.java)
             startActivity(intent)
         }
