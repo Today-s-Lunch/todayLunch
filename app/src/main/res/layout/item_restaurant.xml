@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="조리시간"
-        android:textColor="#BBBBBB"
+        android:textColor="#B3B3B3"
         android:textSize="12sp"
         app:layout_constraintStart_toEndOf="@id/res_photo"
         app:layout_constraintTop_toBottomOf="@id/res_name" />
@@ -54,7 +54,7 @@
         android:layout_marginStart="8dp"
         android:text="30초"
         android:textColor="#000000"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@id/cooking_time2"
         app:layout_constraintStart_toEndOf="@id/cooking_time2" />
@@ -64,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="평균 대기시간"
-        android:textColor="#BBBBBB"
+        android:textColor="#B3B3B3"
         android:textSize="12sp"
         app:layout_constraintTop_toBottomOf="@id/res_name"
         app:layout_constraintStart_toEndOf="@id/cooking_time"
@@ -82,7 +82,7 @@
         android:layout_marginStart="8dp"
         android:text="0분"
         android:textColor="#000000"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@id/avg_cost2"
         app:layout_constraintStart_toEndOf="@id/avg_cost2" />
@@ -93,7 +93,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="가격대"
-        android:textColor="#BBBBBB"
+        android:textColor="#B3B3B3"
         android:textSize="12sp"
         app:layout_constraintStart_toEndOf="@id/res_photo"
         app:layout_constraintTop_toBottomOf="@id/cooking_time2" />
@@ -105,7 +105,7 @@
         android:layout_marginStart="8dp"
         android:text="5000원 이하"
         android:textColor="#000000"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@id/avg_waiting2"
         app:layout_constraintStart_toEndOf="@id/avg_waiting2" />
