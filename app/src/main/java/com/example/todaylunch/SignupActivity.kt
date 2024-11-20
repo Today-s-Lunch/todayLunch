@@ -23,7 +23,7 @@ class SignupActivity : AppCompatActivity() {
         binding.Today.text = spannableString
 
         binding.goToLogin.setOnClickListener {
-            // SignUpActivity로 이동
+            // LoginActivity 이동
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         }

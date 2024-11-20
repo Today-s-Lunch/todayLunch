@@ -180,7 +180,7 @@ class Restaurant_List : AppCompatActivity() {
                 .into(holder.imageView)
 
             holder.itemView.setOnClickListener {
-                val restaurantId = (restaurant.Number.toIntOrNull() ?: 1) - 1
+                val restaurantId = (restaurant.Number.toIntOrNull() ?: 1)
                 val intent = Intent(holder.itemView.context, Restaurant_Detail::class.java).apply {
                     putExtra("restaurantId", restaurantId.toString())  // Number 필드를 ID로 사용
                 }

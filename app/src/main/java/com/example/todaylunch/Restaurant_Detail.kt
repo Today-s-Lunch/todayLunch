@@ -73,6 +73,13 @@ class Restaurant_Detail : AppCompatActivity() {
                 binding.scrapButton.setImageResource(R.drawable.scrap_off)
             }
         }
+
+        //리뷰 작성하기로 화면이동
+        binding.reviewButton.setOnClickListener {
+            // ReviewActivity로 이동
+            val intent = Intent(this, ReviewActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun formatTime(time: String): String {
