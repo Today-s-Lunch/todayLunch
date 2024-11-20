@@ -48,7 +48,9 @@ android {
 dependencies {
     // for 사용자 위치받아오고 거리 계산
     implementation ("com.google.android.gms:play-services-location:21.0.1") // 위치 서비스
+    implementation ("com.google.android.gms:play-services-maps:18.1.0")
     implementation ("com.google.android.gms:play-services-maps:18.0.2") // Google Maps SDK for Android
+    implementation ("com.google.android.material:material:1.9.0'") //bottom sheet 사용
 
     implementation ("com.google.android.flexbox:flexbox:3.0.0")
     implementation(libs.androidx.core.ktx)
