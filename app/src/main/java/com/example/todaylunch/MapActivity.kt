@@ -1,15 +1,9 @@
 package com.example.todaylunch
 
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
-
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.todaylunch.databinding.ActivityMainBinding
+import androidx.databinding.DataBindingUtil.setContentView
 import com.example.todaylunch.databinding.ActivityMapBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -18,81 +12,95 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    val binding: ActivityMapBinding by lazy { ActivityMapBinding.inflate(layoutInflater) }
+    private val binding: ActivityMapBinding by lazy { ActivityMapBinding.inflate(layoutInflater) }
     private lateinit var map: GoogleMap
-    private val API_KEY = "AIzaSyBrfb7yxin3xvGpVzLF-h6okBHnsl82IHM" // API Key 직접 선언
-
+    private var mapView: MapView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("MapDebug", "MapView onCreate called")
-
-
+        Log.d("MapDebug", "MapActivity onCreate called")
         setContentView(binding.root)
 
-
         // MapView 초기화
+        mapView = binding.mapView.also { mapView ->
+            mapView.onCreate(savedInstanceState)
+            mapView.getMapAsync(this)
+        }
 
-
-        // API Key를 GoogleMapOptions에 직접 전달
+        // 지도 설정
         val options = GoogleMapOptions().apply {
-            mapToolbarEnabled(true) // 필요한 옵션 추가
+            mapToolbarEnabled(true)
+            compassEnabled(true)
+            zoomControlsEnabled(true)
         }
-
-        binding.mapView.onCreate(savedInstanceState)
-        // MapView를 동적으로 생성하면서 API Key 전달
-        binding.mapView.getMapAsync { googleMap ->
-            if (googleMap == null) {
-                Log.e("MapDebug", "getMapAsync failed to initialize GoogleMap")
-            } else {
-                Log.d("MapDebug", "getMapAsync successfully initialized GoogleMap")
-                onMapReady(googleMap)
-            }
-        }
-
-
-
-        // Google Maps API Key 설정
-
-
-        // MapView 준비
-
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         Log.d("MapDebug", "onMapReady called")
         map = googleMap
-        val location = LatLng(37.545169, 126.964268)
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
-        Log.d("MapDebug", "Camera moved to location: $location")
 
+        try {
+            // 지도 초기 설정
+            map.apply {
+                // UI 설정
+                uiSettings.apply {
+                    isZoomControlsEnabled = true
+                    isCompassEnabled = true
+                    isMapToolbarEnabled = true
+                }
+
+                // 초기 위치 설정
+                val location = LatLng(37.545169, 126.964268)
+                moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
+                addMarker(MarkerOptions().position(location).title("현재 위치"))
+
+                Log.d("MapDebug", "Camera moved to location: $location")
+            }
+        } catch (e: Exception) {
+            Log.e("MapDebug", "Error setting up map: ${e.message}")
+        }
+    }
+
+    // 생명주기 메서드들
+    override fun onStart() {
+        super.onStart()
+        mapView?.onStart()
     }
 
     override fun onResume() {
         super.onResume()
-        binding.mapView.onResume()
+        mapView?.onResume()
         Log.d("MapDebug", "MapView onResume called")
     }
 
     override fun onPause() {
+        mapView?.onPause()
         super.onPause()
-        binding.mapView.onPause()
         Log.d("MapDebug", "MapView onPause called")
     }
 
+    override fun onStop() {
+        super.onStop()
+        mapView?.onStop()
+    }
+
     override fun onDestroy() {
+        mapView?.onDestroy()
         super.onDestroy()
-        binding.mapView.onDestroy()
         Log.d("MapDebug", "MapView onDestroy called")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        mapView?.onSaveInstanceState(outState)
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        binding.mapView.onLowMemory()
+        mapView?.onLowMemory()
         Log.d("MapDebug", "MapView onLowMemory called")
     }
 }

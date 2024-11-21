@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.utils.`is`
+import java.util.Properties
 
 
 plugins {
@@ -7,6 +8,8 @@ plugins {
     //파이어베이스
     // Add the Google services Gradle plugin
     id("com.google.gms.google-services")
+
+
 
 }
 
@@ -22,6 +25,9 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").reader())
+        manifestPlaceholders["MAPS_API_KEY"] = properties.getProperty("MAPS_API_KEY", "")
 
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -50,7 +56,7 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:21.0.1") // 위치 서비스
     implementation ("com.google.android.gms:play-services-maps:18.1.0")
     implementation ("com.google.android.gms:play-services-maps:18.0.2") // Google Maps SDK for Android
-    implementation ("com.google.android.material:material:1.9.0'") //bottom sheet 사용
+    implementation ("com.google.android.material:material:1.9.0") //bottom sheet 사용
 
     implementation ("com.google.android.flexbox:flexbox:3.0.0")
     implementation(libs.androidx.core.ktx)
@@ -88,4 +94,5 @@ dependencies {
     // Glide 의존성
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
 }
