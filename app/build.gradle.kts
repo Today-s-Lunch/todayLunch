@@ -31,6 +31,11 @@ android {
 
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // local.properties에서 API 키 읽기
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").reader())
+        manifestPlaceholders["MAPS_API_KEY"] = properties.getProperty("MAPS_API_KEY", "")
     }
 
     buildTypes {
@@ -54,26 +59,32 @@ android {
 dependencies {
     // for 사용자 위치받아오고 거리 계산
     implementation ("com.google.android.gms:play-services-location:21.0.1") // 위치 서비스
-    implementation ("com.google.android.gms:play-services-maps:18.1.0")
-    implementation ("com.google.android.gms:play-services-maps:18.0.2") // Google Maps SDK for Android
-    implementation ("com.google.android.material:material:1.9.0") //bottom sheet 사용
+    implementation("com.google.android.gms:play-services-maps:19.0.0") // Google Maps SDK for Android
+    implementation ("com.google.android.material:material:1.9.0'") //bottom sheet 사용
 
-    implementation ("com.google.android.flexbox:flexbox:3.0.0")
+    // Android & UI
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.database.ktx)
     implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.recyclerview)
-    implementation("com.github.bumptech.glide:glide:4.15.1")
     implementation(libs.androidx.room.ktx)
 
-    // Glide 컴파일러 의존성 추가
-    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation(platform("com.google.firebase:firebase-analytics-ktx"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
+    implementation(platform("com.google.firebase:firebase-database:20.0.3"))
+
+    // Glide
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.play.services.measurement.api)
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
