@@ -69,6 +69,7 @@ dependencies {
 
     // Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.play.services.measurement.api)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     // Testing

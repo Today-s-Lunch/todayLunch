@@ -6,20 +6,24 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Looper
 import android.os.Handler
+import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GestureDetectorCompat
 import com.example.todaylunch.databinding.ActivityStartBinding
 import com.example.todaylunch.databinding.LoadingScreenBinding
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 
 
 class StartActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetector
     private lateinit var loadingDialog: LoadingDialog
+    private val auth: FirebaseAuth by lazy { Firebase.auth }
 
     private var isSearchVisible = false
 
@@ -64,6 +68,30 @@ class StartActivity : AppCompatActivity() {
 
         binding.underbarMapinclude.mapButton.setOnClickListener {
             startActivity(HOME)
+        }
+
+        binding.underbarMapinclude.myPageButton.setOnClickListener {
+            // 현재 로그인된 사용자의 정보 저장
+            val currentUser = auth.currentUser
+            val userEmail = currentUser?.email  // 학번@example.com 형태
+            val studentId = userEmail?.split("@")?.get(0)  // @ 앞부분(학번)만 추출
+
+            // 로그아웃 처리
+            auth.signOut()
+
+            // 로그 출력
+            if (studentId != null) {
+                Log.d("Logout", "학번 $studentId 로그아웃 완료")
+            } else {
+                Log.d("Logout", "로그아웃 완료 (사용자 정보 없음)")
+            }
+
+            // LoginActivity로 이동
+            val intent = Intent(this, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            finish()
         }
     }
 
