@@ -36,7 +36,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
         // MapView 초기화
-        Log.d("MapDebug", "MapView onCreate called")
+
 
         // API Key를 GoogleMapOptions에 직접 전달
         val options = GoogleMapOptions().apply {
@@ -45,8 +45,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         binding.mapView.onCreate(savedInstanceState)
         // MapView를 동적으로 생성하면서 API Key 전달
-        binding.mapView.getMapAsync(this)
-        Log.d("MapDebug", "MapView initialized and getMapAsync called")
+        binding.mapView.getMapAsync { googleMap ->
+            if (googleMap == null) {
+                Log.e("MapDebug", "getMapAsync failed to initialize GoogleMap")
+            } else {
+                Log.d("MapDebug", "getMapAsync successfully initialized GoogleMap")
+                onMapReady(googleMap)
+            }
+        }
 
 
 
