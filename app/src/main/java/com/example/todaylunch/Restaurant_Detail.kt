@@ -18,12 +18,21 @@ import com.bumptech.glide.Glide
 import com.example.todaylunch.databinding.ActivityRestaurantDetailBinding
 import com.example.todaylunch.databinding.ItemReviewBinding
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.database
+import com.google.firebase.auth.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class Restaurant_Detail : AppCompatActivity() {
     val binding: ActivityRestaurantDetailBinding by lazy { ActivityRestaurantDetailBinding.inflate(layoutInflater) }
     private var isScraped = false  // 스크랩 상태를 추적하는 변수
     private lateinit var reviewAdapter: ReviewAdapter
+    private val auth = FirebaseAuth.getInstance()
+    private val database = FirebaseDatabase.getInstance()
+    private lateinit var restaurantId: String
 
     data class Restaurant(
         val Number: String = "",
@@ -43,19 +52,27 @@ class Restaurant_Detail : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        
+        //로그인한 사용자 받아오기
+        val currentUserId = auth.currentUser?.uid ?: return
 
         // RecyclerView 초기화
         setupRecyclerView()
 
-        val restaurantId = intent.getStringExtra("restaurantId") ?: "1"
+        restaurantId = intent.getStringExtra("restaurantId") ?: "1"
+
+        // 스크랩 상태 확인
+        checkScrapStatus(currentUserId, restaurantId)
+
+        // 스크랩 버튼 클릭 리스너
+        binding.scrapButton.setOnClickListener {
+            toggleScrap(currentUserId, restaurantId)
+        }
+
         //식당 로딩 함수
         loadRestaurantData(restaurantId)
         //리뷰 로딩 함수
         loadReviews(restaurantId)
-
-        binding.reviewButton.setOnClickListener {
-            // TODO: 리뷰 작성 화면으로 이동
-        }
 
         //-----------------------------------------------------------언더바 설정
         // 버튼 클릭 리스너 설정
@@ -75,22 +92,11 @@ class Restaurant_Detail : AppCompatActivity() {
             startActivity(goToStartActivity)
         }
 
-        // 스크랩 버튼 클릭 리스너
-        binding.scrapButton.setOnClickListener {
-            isScraped = !isScraped  // 상태 토글
-
-            // 상태에 따라 이미지 변경
-            if (isScraped) {
-                binding.scrapButton.setImageResource(R.drawable.scrap_on)
-            } else {
-                binding.scrapButton.setImageResource(R.drawable.scrap_off)
-            }
-        }
-
         //리뷰 작성하기로 화면이동
         binding.reviewButton.setOnClickListener {
             // ReviewActivity로 이동
             val intent = Intent(this, ReviewActivity::class.java)
+            intent.putExtra("restaurantId", restaurantId)  // 식당 ID
             startActivity(intent)
         }
 
@@ -262,5 +268,52 @@ class Restaurant_Detail : AppCompatActivity() {
                 Log.e("Restaurant_Detail", "Error loading reviews", exception)
                 Toast.makeText(this, "리뷰를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun checkScrapStatus(userId: String, restaurantId: String) {
+        val scrapRef = database.reference.child("user_scraps")
+            .child(userId)
+            .child(restaurantId)
+
+        scrapRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                isScraped = snapshot.getValue(Boolean::class.java) ?: false
+                // UI 업데이트
+                updateScrapButtonUI()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Restaurant_Detail", "스크랩 상태 확인 실패", error.toException())
+            }
+        })
+    }
+
+    private fun toggleScrap(userId: String, restaurantId: String) {
+        val scrapRef = database.reference.child("user_scraps")
+            .child(userId)
+            .child(restaurantId)
+
+        // 현재 상태의 반대로 설정
+        isScraped = !isScraped
+
+        scrapRef.setValue(isScraped)
+            .addOnSuccessListener {
+                // UI 업데이트
+                updateScrapButtonUI()
+            }
+            .addOnFailureListener { e ->
+                Log.e("Restaurant_Detail", "스크랩 상태 변경 실패", e)
+                // 실패 시 상태 되돌리기
+                isScraped = !isScraped
+                updateScrapButtonUI()
+                Toast.makeText(this, "스크랩 상태 변경에 실패했습니다.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun updateScrapButtonUI() {
+        binding.scrapButton.setImageResource(
+            if (isScraped) R.drawable.scrap_on
+            else R.drawable.scrap_off
+        )
     }
 }
