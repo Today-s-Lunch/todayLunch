@@ -5,20 +5,29 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Up Bar at the Top -->
+    <include
+        layout="@layout/item_mapup"
+        android:id="@+id/upbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true" />
 
-    <!-- Google Map -->
+    <!-- Google Map in the middle -->
     <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/upbar"
+        android:layout_above="@id/downbar" />
 
     <!-- Bottom Sheet -->
-
     <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/bottomSheetContainer"
         android:layout_width="match_parent"
-        android:layout_height="675dp">
+        android:layout_height="630dp"
+        android:layout_above="@id/downbar">
 
-        <!-- Replace BottomSheetBehavior with FrameLayout -->
         <FrameLayout
             android:id="@+id/bottomSheet"
             android:layout_width="match_parent"
@@ -34,15 +43,13 @@
                 android:orientation="vertical">
 
                 <!-- Bottom Sheet Header -->
-                <TextView
+                <ImageView
                     android:id="@+id/bottomSheetTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:padding="8dp"
-                    android:text="내 주변 음식점 보기"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:src="@drawable/drawicon" />
 
                 <!-- RecyclerView for restaurant list -->
                 <androidx.recyclerview.widget.RecyclerView
@@ -54,5 +61,11 @@
         </FrameLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-
+    <!-- Down Bar at the Bottom -->
+    <include
+        layout="@layout/item_underbar2"
+        android:id="@+id/downbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
 </RelativeLayout>
