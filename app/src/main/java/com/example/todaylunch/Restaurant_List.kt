@@ -50,6 +50,7 @@ class Restaurant_List : AppCompatActivity() {
     }
     private lateinit var recyclerViewAdapter: RestaurantAdapter
     private var restaurantList: MutableList<Restaurant> = mutableListOf()
+    private var FilterList: MutableList<Restaurant> = mutableListOf()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var userLat: Double = 0.0
     private var userLon: Double = 0.0
@@ -140,11 +141,11 @@ class Restaurant_List : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 when (position) {
                     0 -> {
-                        restaurantList.sortBy { it.Name }
-                        Log.d("SortingDebug", "Sorted by Name: ${restaurantList.map { it.Name }}")
+                        FilterList.sortBy { it.Name }
+                        Log.d("SortingDebug", "Sorted by Name: ${FilterList.map { it.Name }}")
                     }
                     1 -> {
-                        restaurantList.sortBy {
+                        FilterList.sortBy {
                             val distance = calculateDistance(
                                 userLat, userLon,
                                 it.Latitude.toDoubleOrNull() ?: 0.0,
@@ -153,11 +154,11 @@ class Restaurant_List : AppCompatActivity() {
                             Log.d("DistanceDebug", "Restaurant: ${it.Name}, Distance: $distance")
                             distance
                         }
-                        Log.d("SortingDebug", "Sorted by Distance: ${restaurantList.map { it.Name }}")
+                        Log.d("SortingDebug", "Sorted by Distance: ${FilterList.map { it.Name }}")
                     }
                 }
-                recyclerViewAdapter.updateList(restaurantList) // 어댑터에 정렬된 리스트 반영
-                Log.d("AdapterDebug", "RecyclerView updated with sorted list")
+                updateRecyclerView(FilterList)
+                Log.d("AdapterDebug", "RecyclerView updated with sorted list: ${FilterList.map { it.Name }}")
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -170,6 +171,7 @@ class Restaurant_List : AppCompatActivity() {
 
             restaurantList = newList // 새로운 리스트로 덮어씌움
             notifyDataSetChanged() // 변경 사항 알림
+            Log.d("AdapterDebug", "RecyclerView updated with list size: ${restaurantList.size}")
         }
 
 
@@ -312,8 +314,9 @@ class Restaurant_List : AppCompatActivity() {
                     Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
 
                     val adapter = RestaurantAdapter(filteredList)
-
-                    updateRecyclerView(filteredList)
+                    FilterList= filteredList.toMutableList()
+                    FilterList.sortBy{it.Name}
+                    updateRecyclerView(FilterList)//초깃값 이름순으로 하기 위해
                 }
             }
 

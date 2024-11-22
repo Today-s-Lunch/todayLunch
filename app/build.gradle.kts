@@ -33,9 +33,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // local.properties에서 API 키 읽기
-        val properties = Properties()
-        properties.load(project.rootProject.file("local.properties").reader())
-        manifestPlaceholders["MAPS_API_KEY"] = properties.getProperty("MAPS_API_KEY", "")
+
     }
 
     buildTypes {
@@ -60,7 +58,7 @@ dependencies {
     // for 사용자 위치받아오고 거리 계산
     implementation ("com.google.android.gms:play-services-location:21.0.1") // 위치 서비스
     implementation("com.google.android.gms:play-services-maps:19.0.0") // Google Maps SDK for Android
-    implementation ("com.google.android.material:material:1.9.0'") //bottom sheet 사용
+    implementation ("com.google.android.material:material:1.9.0") //bottom sheet 사용
 
     // Android & UI
     implementation("com.google.android.flexbox:flexbox:3.0.0")
