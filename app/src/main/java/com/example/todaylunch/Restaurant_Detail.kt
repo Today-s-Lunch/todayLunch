@@ -107,6 +107,12 @@ class Restaurant_Detail : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 리뷰 작성 후에 바로 리뷰 보이도록
+        loadReviews(restaurantId)
+    }
+
     private fun setupRecyclerView() {
         reviewAdapter = ReviewAdapter()
         binding.reviewRecyclerView.apply {
@@ -225,6 +231,8 @@ class Restaurant_Detail : AppCompatActivity() {
     private fun loadReviews(restaurantId: String) {
         val db = Firebase.database.reference
         val reviewsList = mutableListOf<ReviewItem>()
+
+        reviewAdapter.setReviews(emptyList())
 
         // reviews/restaurantId 경로에서 리뷰 데이터 가져오기
         db.child("reviews").child(restaurantId).get()
