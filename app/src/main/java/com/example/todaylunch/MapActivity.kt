@@ -108,7 +108,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val drawable = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = 16f // 둥근 모서리 설정
+            cornerRadius = 50f // 둥근 모서리 설정
             setColor(ContextCompat.getColor(this@MapActivity, R.color.white)) // 배경 색상 설정
         }
 
@@ -211,8 +211,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .title("내 위치")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
         )
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(userLat, userLng), 15f))
-
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(userLat, userLng), 18f)) //okay
         // 레스토랑 마커 추가
         restaurants.forEach { restaurant ->
             val latitude = restaurant.Latitude.toDoubleOrNull()
