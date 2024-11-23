@@ -3,6 +3,7 @@ package com.example.todaylunch
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,13 +27,20 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.database.*
 import kotlinx.coroutines.launch
 import kotlin.math.*
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
-class MapActivity : AppCompatActivity() {
-
+class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val binding: ActivityMapBinding by lazy { ActivityMapBinding.inflate(layoutInflater) }
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var adapter: RestaurantAdapter
+    private lateinit var googleMap: GoogleMap
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
 
     private val db: DatabaseReference by lazy {
         FirebaseDatabase.getInstance().getReference("restaurants")
@@ -50,19 +59,37 @@ class MapActivity : AppCompatActivity() {
         // BottomSheet 초기화
         setupBottomSheet()
 
+        // Google Map 초기화
+        binding.mapView.onCreate(savedInstanceState)
+        binding.mapView.getMapAsync(this)
+
         // 사용자 위치 가져오기 및 데이터 로드
         getUserLocation()
-        binding.upbar.backButton.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        val goToStartActivity = Intent(this, StartActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
         binding.downbar.homeButton.setOnClickListener {
-            startActivity(Intent(this, StartActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            })
+            startActivity(goToStartActivity)
         }
-        binding.downbar.mapButton.setOnClickListener {
-            startActivity(Intent(this, MapActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            })
+
+        binding.downbar.myPageButton.setOnClickListener {
+            startActivity(goToStartActivity)
         }
+        val goTomapActivity = Intent(this, MapActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        binding.downbar.mapButton.setOnClickListener{
+            startActivity(goTomapActivity)
+        }
+        binding.upbar.backButton.setOnClickListener {onBackPressedDispatcher.onBackPressed()}
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+
+        // 지도 기본 설정
+        googleMap.uiSettings.isZoomControlsEnabled = true
+        googleMap.uiSettings.isCompassEnabled = true
     }
 
     private fun setupRecyclerView() {
@@ -74,20 +101,37 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun setupBottomSheet() {
-        val bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         bottomSheetBehavior.peekHeight = 200
+        bottomSheetBehavior.isHideable = false // BottomSheet가 숨겨지지 않도록 설정
+
+        val drawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // 둥근 모서리 설정
+            setColor(ContextCompat.getColor(this@MapActivity, R.color.white)) // 배경 색상 설정
+        }
+
+        binding.bottomSheet.background = drawable // 배경 적용
+
+        // 상태 변화 디버깅
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                Log.d("BottomSheetState", "State changed to: $newState")
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                Log.d("BottomSheetSlide", "Slide offset: $slideOffset")
+            }
+        })
     }
 
     private fun getUserLocation() {
         val useTestLocation = true // 테스트 좌표 사용 여부
 
         if (useTestLocation) {
-
-            val testLat =  37.545169 // 숙대좌표
-
-            val testLng = 126.970833
-
+            val testLat = 37.544679 // 숙대입구역
+            val testLng = 126.970884
             Log.d("TestLocation", "Using test location: ($testLat, $testLng)")
             fetchNearbyRestaurants(testLat, testLng)
         } else {
@@ -119,49 +163,37 @@ class MapActivity : AppCompatActivity() {
                 val restaurants = snapshot.children.mapNotNull { restaurantSnapshot ->
                     val restaurant = restaurantSnapshot.getValue(Restaurant::class.java)
 
-                    val latitude = restaurant?.Latitude?.toDoubleOrNull()
-                    val longitude = restaurant?.Longitude?.toDoubleOrNull()
-
-                    // 유효하지 않은 좌표를 가진 데이터는 필터링
-                    if (latitude == null || longitude == null) {
-                        Log.e("InvalidRestaurant", "Invalid location for: ${restaurant?.Name}")
+                    if (restaurant?.Latitude.isNullOrEmpty() || restaurant?.Longitude.isNullOrEmpty()) {
+                        Log.e("InvalidData", "Skipping restaurant with invalid coordinates: ${restaurant?.Name}")
                         return@mapNotNull null
                     }
 
-                    // 유효한 데이터만 반환
                     restaurant
                 }
 
                 lifecycleScope.launch {
+                    // 거리 계산 및 정렬
                     val sortedList = restaurants
                         .map { restaurant ->
-                            val distance = calculateDistance(
-                                userLat, userLng,
-                                restaurant.Latitude.toDoubleOrNull() ?: 0.0,
-                                restaurant.Longitude.toDoubleOrNull() ?: 0.0
-                            )
-                            val walkingTime = calculateWalkingTime(distance)
+                            val latitude = restaurant.Latitude.toDoubleOrNull() ?: 0.0
+                            val longitude = restaurant.Longitude.toDoubleOrNull() ?: 0.0
+                            val distance = calculateDistance(userLat, userLng, latitude, longitude)
 
-                            Log.d(
-                                "DistanceDebug",
-                                "Name: ${restaurant.Name}, Distance: $distance meters, Walking Time: $walkingTime mins"
-                            )
+                            // 거리 로그 출력
+                            Log.d("Distance", "Name: ${restaurant.Name}, Distance: $distance meters")
 
-                            restaurant to walkingTime
+                            // 거리와 레스토랑 데이터를 Pair로 반환
+                            Pair(distance, restaurant)
                         }
-                        .sortedBy { it.second } // 도보 시간 기준 정렬
+                        .sortedBy { it.first } // 거리로 정렬
                         .take(5) // 상위 5개 선택
+                        .map { it.second } // 정렬된 레스토랑 데이터만 가져옴
 
-                    sortedList.forEach {
-                        val (restaurant, walkingTime) = it
-                        Log.d(
-                            "SortedRestaurant",
-                            "Name: ${restaurant.Name}, Walking Time: $walkingTime mins"
-                        )
-                    }
+                    // 지도에 마커 추가
+                    addMarkers(userLat, userLng, sortedList)
 
-                    // RecyclerView에 업데이트
-                    updateRecyclerView(sortedList.map { it.first })
+                    // RecyclerView 업데이트
+                    updateRecyclerView(sortedList)
                 }
             }
 
@@ -171,20 +203,33 @@ class MapActivity : AppCompatActivity() {
         })
     }
 
-    private fun updateRecyclerView(nearbyRestaurants: List<Restaurant>) {
-        adapter.updateList(nearbyRestaurants)
+    private fun addMarkers(userLat: Double, userLng: Double, restaurants: List<Restaurant>) {
+        // 내 위치 마커 추가
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(userLat, userLng))
+                .title("내 위치")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+        )
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(userLat, userLng), 15f))
+
+        // 레스토랑 마커 추가
+        restaurants.forEach { restaurant ->
+            val latitude = restaurant.Latitude.toDoubleOrNull()
+            val longitude = restaurant.Longitude.toDoubleOrNull()
+
+            if (latitude != null && longitude != null) {
+                googleMap.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(latitude, longitude))
+                        .title(restaurant.Name)
+                )
+            }
+        }
     }
 
-    private fun calculateWalkingTime(distanceInMeters: Double): Int {
-        val walkingSpeed = 1.25 // m/s (평균 보행 속도)
-
-        // 신호등 대기 시간 계산 (100m당 1개의 교차로 가정)
-        val intersectionCount = (distanceInMeters / 100).toInt()
-        val trafficLightDelay = intersectionCount * 30 // 교차로당 30초 대기 가정
-
-        // 도보 시간 계산
-        val walkingTimeInSeconds = (distanceInMeters / walkingSpeed).toInt() + trafficLightDelay
-        return (walkingTimeInSeconds / 60).toInt() // 분 단위로 반환
+    private fun updateRecyclerView(nearbyRestaurants: List<Restaurant>) {
+        adapter.updateList(nearbyRestaurants)
     }
 
     private fun calculateDistance(
@@ -199,16 +244,11 @@ class MapActivity : AppCompatActivity() {
         val Δφ = Math.toRadians(targetLat - userLat)
         val Δλ = Math.toRadians(targetLon - userLon)
 
-        // 디버깅용 로그 추가
-        Log.d("CalculateDistance", "userLat: $userLat, userLon: $userLon")
-        Log.d("CalculateDistance", "targetLat: $targetLat, targetLon: $targetLon")
-        Log.d("CalculateDistance", "Δφ: $Δφ, Δλ: $Δλ")
-
         val a = sin(Δφ / 2).pow(2) + cos(φ1) * cos(φ2) * sin(Δλ / 2).pow(2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         val distance = R * c
 
-        Log.d("CalculateDistance", "Calculated Distance: $distance meters")
+
         return distance
     }
 
@@ -229,16 +269,14 @@ class MapActivity : AppCompatActivity() {
         val photourl: String = "",
         val type: String = "",
         val Number: String = "",
-
     )
 
     inner class RestaurantAdapter(private var restaurantList: List<Restaurant>) :
         RecyclerView.Adapter<RestaurantAdapter.RestaurantViewHolder>() {
 
         fun updateList(newList: List<Restaurant>) {
-            restaurantList = newList // 새로운 리스트로 덮어씌움
-            notifyDataSetChanged() // 변경 사항 알림
-            Log.d("AdapterDebug", "RecyclerView updated with list size: ${restaurantList.size}")
+            restaurantList = newList
+            notifyDataSetChanged()
         }
 
         inner class RestaurantViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -260,45 +298,23 @@ class MapActivity : AppCompatActivity() {
             holder.nameTextView.text = restaurant.Name
             holder.costTextView.text =
                 restaurant.avgcost.replace("under", "원 이하").replace("over", "원 이상")
-            holder.waitTextView.text = convertTime(restaurant.waittime)
-            holder.cookTextView.text = convertTime(restaurant.maketime)
-
+            holder.waitTextView.text = restaurant.waittime
+            holder.cookTextView.text = restaurant.maketime
 
             Glide.with(holder.imageView.context)
                 .load(restaurant.photourl)
                 .transform(CenterCrop(), RoundedCorners(20))
                 .into(holder.imageView)
 
-            holder.itemView.setOnClickListener {
+            holder.itemView.setOnClickListener {//detail 연결
                 val restaurantId = (restaurant.Number.toIntOrNull() ?: 1)
                 val intent = Intent(holder.itemView.context, Restaurant_Detail::class.java).apply {
-                    putExtra("restaurantId", restaurantId.toString())
+                    putExtra("restaurantId", restaurantId.toString())  // Number 필드를 ID로 사용
                 }
                 holder.itemView.context.startActivity(intent)
             }
         }
 
         override fun getItemCount() = restaurantList.size
-
-        private fun convertTime(timeString: String): String {
-            val timePattern = Regex("(\\d+)(m|s)")
-            val matchResult = timePattern.find(timeString)
-            return matchResult?.let {
-                val value = it.groupValues[1].toInt()
-                when (it.groupValues[2]) {
-                    "m" -> "$value 분"
-                    "s" -> "$value 초"
-                    else -> timeString
-                }
-            } ?: timeString
-        }
-        private fun getUserLocation() { //우ㅣ치임의설정
-
-            val testLat = 37.554722 // 테스트 위도
-            val testLng = 126.970833 // 테스트 경도
-
-            Log.d("TestLocation", "Using test location: ($testLat, $testLng)")
-            fetchNearbyRestaurants(testLat, testLng)
-        }
     }
 }

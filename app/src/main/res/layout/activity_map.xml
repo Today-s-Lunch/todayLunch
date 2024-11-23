@@ -32,7 +32,9 @@
             android:id="@+id/bottomSheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/rounded_corner_bg"
+
+
+            android:background="@color/white"
             android:elevation="8dp"
             android:padding="16dp"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
