@@ -242,8 +242,8 @@ class Restaurant_List : AppCompatActivity() {
         }
     }
     private fun setMockLocation() { // 수동위치
-        userLat = 37.545169 // 숙대좌표
-        userLon = 126.964268
+        userLat = 37.545317// 숙대좌표
+        userLon =126.965653
         Log.d("MockLocation", "Lat: $userLat, Lon: $userLon")
         loadRestaurants()
     }
@@ -361,86 +361,6 @@ class Restaurant_List : AppCompatActivity() {
         return restaurant.type.trim().equals(mappedType, ignoreCase = true)
     }
 
-    /*private suspend fun filterByDistanceAsync(restaurant: Restaurant): Boolean {
-        val distanceFilter = selectedFilters["distance"] ?: return true
-        val maxDistanceMinutes = when (distanceFilter) {
-            "도보 5분" -> 5
-            "도보 10분" -> 10
-            "도보 15분" -> 15
-            else -> Int.MAX_VALUE
-        }
-
-        return withContext(Dispatchers.IO) {
-            val walkingTime = getWalkingTimeFromOSRM(
-                originLat = userLat,
-                originLon = userLon,
-                destLat = restaurant.Latitude.toDoubleOrNull() ?: 0.0,
-                destLon = restaurant.Longitude.toDoubleOrNull() ?: 0.0
-            )
-
-            Log.d("WalkingTimeDebug", "Restaurant: ${restaurant.Name}, Calculated Walking Time: $walkingTime minutes")
-
-            if (walkingTime == Int.MAX_VALUE) {
-                Log.e("WalkingTimeDebug", "Failed to calculate walking time for ${restaurant.Name}")
-                return@withContext true // 실패 시 기본적으로 포함
-            }
-
-            val result = walkingTime <= maxDistanceMinutes
-            Log.d("WalkingTimeFilter", "Restaurant: ${restaurant.Name}, Pass Filter: $result")
-            result
-        }
-    }*/
-    private fun getWalkingTimeFromGoogleMapsAPI( originLat: Double,
-                                                 originLon: Double,
-                                                 destLat: Double,
-                                                 destLon: Double
-    ): Int {
-        return try {
-            val url = URL(
-                "https://maps.googleapis.com/maps/api/distancematrix/json?origins=$originLat,$originLon&destinations=$destLat,$destLon&mode=walking&key=$API_KEY"
-            )
-            Log.d("DistanceMatrixAPI Request", url.toString())
-            val response = url.readText()
-            val json = JSONObject(response)
-            val duration = json
-                .getJSONArray("rows")
-                .getJSONObject(0)
-                .getJSONArray("elements")
-                .getJSONObject(0)
-                .getJSONObject("duration")
-                .getInt("value") // Duration in seconds
-            Log.d("DistanceMatrixAPI Response", json.toString())
-            duration / 60 // Convert to minutes
-        } catch (e: Exception) {
-            Log.e("DistanceMatrixAPI", "Error: ${e.message}")
-            Int.MAX_VALUE
-        }
-    }/*originLat: Double, originLon: Double, destLat: Double, destLon: Double): Int {
-        return try {
-            // URL 생성
-            val url = URL(
-                "https://maps.googleapis.com/maps/api/directions/json?origin=$originLat,$originLon&destination=$destLat,$destLon&mode=walking&key=$API_KEY"
-            )
-            Log.d("API Request URL", url.toString())
-
-
-            // API 호출 및 응답 받기
-            val response = url.readText()
-            val json = JSONObject(response)
-
-            // JSON 응답에서 경로(route) 및 다리(legs) 정보 추출
-            val routes = json.optJSONArray("routes") ?: throw Exception("No routes found in response")
-            val legs = routes.optJSONObject(0)?.optJSONArray("legs") ?: throw Exception("No legs found in route")
-            val duration = legs.optJSONObject(0)?.optJSONObject("duration")?.optInt("value")
-                ?: throw Exception("Duration not found in response")
-
-            // 초 단위 시간을 분으로 변환하여 반환
-            duration / 60 // Convert to minutes
-        } catch (e: Exception) {
-            // 로그 출력 및 디폴트 값 반환
-            Log.e("GoogleMapsAPI", "Error fetching walking time: ${e.message}")
-            Int.MAX_VALUE
-        }*/
 
 
     companion object {
