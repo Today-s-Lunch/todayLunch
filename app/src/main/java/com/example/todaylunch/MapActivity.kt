@@ -90,6 +90,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         // 지도 기본 설정
         googleMap.uiSettings.isZoomControlsEnabled = true
         googleMap.uiSettings.isCompassEnabled = true
+        googleMap.setPadding(50, 0, 30, 1150) // 줌인줌아웃 오른쪽 위로 이동
     }
 
     private fun setupRecyclerView() {
@@ -138,22 +139,65 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    if (location != null) {
-                        fetchNearbyRestaurants(location.latitude, location.longitude)
-                    } else {
-                        Log.e("LocationError", "Failed to get user location.")
-                    }
-                }
-            } else {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     LOCATION_PERMISSION_REQUEST_CODE
                 )
+                return
             }
+
+            // 위치 서비스 활성화 확인
+            val locationRequest = com.google.android.gms.location.LocationRequest.create().apply {
+                priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
+            }
+
+            val builder = com.google.android.gms.location.LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest)
+
+            val settingsClient = LocationServices.getSettingsClient(this)
+            settingsClient.checkLocationSettings(builder.build())
+                .addOnSuccessListener {
+                    Log.d("LocationSettings", "Location service is enabled.")
+
+                    // 위치 정보 가져오기
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                        if (location == null) {
+
+                                val locationRequest = com.google.android.gms.location.LocationRequest.create().apply {
+                                    interval = 1000 // 1초 간격
+                                    fastestInterval = 500
+                                    priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
+                                }
+
+                                fusedLocationClient.requestLocationUpdates(locationRequest, object : com.google.android.gms.location.LocationCallback() {
+                                    override fun onLocationResult(locationResult: com.google.android.gms.location.LocationResult) {
+                                        val lastLocation = locationResult.lastLocation
+                                        if (lastLocation != null) {
+                                            fetchNearbyRestaurants(lastLocation.latitude, lastLocation.longitude)
+                                            fusedLocationClient.removeLocationUpdates(this)
+                                        }
+                                    }
+                                }, mainLooper)
+
+                        } else {
+                            fetchNearbyRestaurants(location.latitude, location.longitude)
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("LocationSettingsError", "Location service is disabled. Exception: ${exception.message}")
+                    // 사용자에게 위치 서비스를 활성화하라고 안내
+                    if (exception is com.google.android.gms.common.api.ResolvableApiException) {
+                        try {
+                            exception.startResolutionForResult(this, LOCATION_SERVICE_REQUEST_CODE)
+                        } catch (sendEx: Exception) {
+                            Log.e("LocationResolutionError", "Failed to resolve location settings: ${sendEx.message}")
+                        }
+                    }
+                }
         }
     }
 
@@ -231,6 +275,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         adapter.updateList(nearbyRestaurants)
     }
 
+
     private fun calculateDistance(
         userLat: Double,
         userLon: Double,
@@ -253,6 +298,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1000
+        private const val LOCATION_SERVICE_REQUEST_CODE = 2000
     }
 
     data class Restaurant(
@@ -316,4 +362,5 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         override fun getItemCount() = restaurantList.size
     }
+
 }
