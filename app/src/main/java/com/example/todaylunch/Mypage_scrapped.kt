@@ -1,5 +1,6 @@
 package com.example.todaylunch
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -171,7 +172,10 @@ class ScrappedAdapter : RecyclerView.Adapter<ScrappedAdapter.ScrappedViewHolder>
                     // 아이템 클릭 시 상세 정보로 이동
                     root.setOnClickListener {
                         // Intent로 상세 페이지로 이동
+                        val intent = Intent(root.context, Restaurant_Detail::class.java)
                         // restaurant.Number를 사용하여 해당 레스토랑 정보 전달
+                        intent.putExtra("restaurantId", restaurant.Number)
+                        root.context.startActivity(intent)
                     }
 
                     // 북마크 클릭 시 스크랩 상태 토글

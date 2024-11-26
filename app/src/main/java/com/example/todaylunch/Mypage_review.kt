@@ -1,5 +1,6 @@
 package com.example.todaylunch
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -178,14 +179,21 @@ class ReviewAdapter : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
 
         fun bind(review: Review) {
             binding.apply {
-                restaurantName.text = review.restaurantName  // 레스토랑 이름 표시
-                ratingBar.rating = review.rating      // 별점 표시
-                reviewText.text = review.content         // 리뷰 내용 표시
-                //createdAt.text = review.createdAt
+                restaurantName.text = review.restaurantName
+                ratingBar.rating = review.rating
+                reviewText.text = review.content
 
-                // 아이템 클릭시 상세 페이지로 이동
+                // DetailActivity로 넘어갈 때 필요한 데이터들을 모두 전달
                 root.setOnClickListener {
-                    // 레스토랑 상세 페이지로 이동하는 코드 구현
+                    val intent = Intent(root.context, ReviewDetailActivity::class.java).apply {
+                        putExtra("reviewId", review.reviewId)           // 리뷰 ID
+                        putExtra("restaurantName", review.restaurantName) // 레스토랑 이름
+                        putExtra("rating", review.rating)               // 별점
+                        putExtra("content", review.content)             // 리뷰 내용
+                        putExtra("restaurantId", review.restaurantId)   // 레스토랑 ID
+                        putExtra("createdAt", review.createdAt)         // 작성 시간
+                    }
+                    root.context.startActivity(intent)
                 }
             }
         }
