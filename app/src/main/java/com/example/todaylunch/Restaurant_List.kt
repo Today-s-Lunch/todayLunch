@@ -104,11 +104,18 @@ class Restaurant_List : AppCompatActivity() {
             startActivity(intent)
         }
 
+        val MYPAGE = Intent(this, MypageActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+
         binding.underbar.backButton.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
         binding.underbar.homeButton.setOnClickListener {
             startActivity(Intent(this, StartActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             })
+        }
+        binding.underbar.myPageButton.setOnClickListener {
+            startActivity(MYPAGE)
         }
     }
     private fun setupRecyclerView() {

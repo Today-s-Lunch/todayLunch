@@ -71,27 +71,10 @@ class StartActivity : AppCompatActivity() {
         }
 
         binding.underbarMapinclude.myPageButton.setOnClickListener {
-            // 현재 로그인된 사용자의 정보 저장
-            val currentUser = auth.currentUser
-            val userEmail = currentUser?.email  // 학번@example.com 형태
-            val studentId = userEmail?.split("@")?.get(0)  // @ 앞부분(학번)만 추출
-
-            // 로그아웃 처리
-            auth.signOut()
-
-            // 로그 출력
-            if (studentId != null) {
-                Log.d("Logout", "학번 $studentId 로그아웃 완료")
-            } else {
-                Log.d("Logout", "로그아웃 완료 (사용자 정보 없음)")
+            val MYPAGE = Intent(this, MypageActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             }
-
-            // LoginActivity로 이동
-            val intent = Intent(this, LoginActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }
-            startActivity(intent)
-            finish()
+            startActivity(MYPAGE)
         }
     }
 
