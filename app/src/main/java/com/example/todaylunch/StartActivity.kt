@@ -60,6 +60,9 @@ class StartActivity : AppCompatActivity() {
         val HOME = Intent(this, StartActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
+        val MAP = Intent(this, MapActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
 
 
         binding.underbarMapinclude.homeButton.setOnClickListener {
@@ -67,7 +70,7 @@ class StartActivity : AppCompatActivity() {
         }
 
         binding.underbarMapinclude.mapButton.setOnClickListener {
-            startActivity(HOME)
+            startActivity(MAP)
         }
 
         binding.underbarMapinclude.myPageButton.setOnClickListener {
