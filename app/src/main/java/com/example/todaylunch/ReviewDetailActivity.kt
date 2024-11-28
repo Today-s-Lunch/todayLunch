@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.todaylunch.databinding.ActivityReviewDetailBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -83,17 +84,38 @@ class ReviewDetailActivity : AppCompatActivity() {
     }
 
     private fun deleteReview(restaurantId: String, reviewId: String) {
-        FirebaseDatabase.getInstance().reference
-            .child("reviews")
-            .child(restaurantId)
-            .child(reviewId)
-            .removeValue()
+        val databaseRef = FirebaseDatabase.getInstance().reference
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (userId.isNullOrEmpty()) {
+            Toast.makeText(this, "사용자 정보를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // `reviews` 노드에서 삭제
+        val reviewsRef = databaseRef.child("reviews").child(restaurantId).child(reviewId)
+
+        // `user_reviews` 노드에서 삭제
+        val userReviewsRef = databaseRef.child("user_reviews").child(userId).child(restaurantId).child(reviewId)
+
+        reviewsRef.removeValue()
             .addOnSuccessListener {
-                Toast.makeText(this, "리뷰가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                finish()
+                Log.d("DeleteReview", "reviews에서 삭제 성공")
+                // `user_reviews`에서도 삭제
+                userReviewsRef.removeValue()
+                    .addOnSuccessListener {
+                        Log.d("DeleteReview", "user_reviews에서 삭제 성공")
+                        Toast.makeText(this, "리뷰가 성공적으로 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("DeleteReview", "user_reviews 삭제 실패: ${e.message}")
+                        Toast.makeText(this, "user_reviews 삭제에 실패했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
-            .addOnFailureListener {
-                Toast.makeText(this, "리뷰 삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { e ->
+                Log.e("DeleteReview", "reviews 삭제 실패: ${e.message}")
+                Toast.makeText(this, "reviews 삭제에 실패했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
