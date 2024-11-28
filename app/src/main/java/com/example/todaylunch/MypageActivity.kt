@@ -25,11 +25,23 @@ class MypageActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(binding.root)  // binding.root로 수정
+        setContentView(binding.root)
 
         loadUserNickname()
         setupViewPager()
         setupTabLayout()
+
+        // Intent로 전달된 fragmentId 처리
+        val fragmentId = intent.getStringExtra("fragmentId") ?: "info"
+        val initialPosition = when (fragmentId) {
+            "info" -> 0  // 내 정보
+            "scrap" -> 1 // 스크랩한 식당
+            "review" -> 2 // 작성한 리뷰
+            else -> 0    // 기본 값은 '내 정보'
+        }
+
+        // 초기 페이지 설정
+        binding.viewPager.setCurrentItem(initialPosition, false)
 
         val MYPAGE = Intent(this, MypageActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -37,13 +49,11 @@ class MypageActivity : AppCompatActivity() {
         val HOME = Intent(this, StartActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
+
+        // 언더바 버튼 동작 설정
         binding.underbar.backButton.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
-        binding.underbar.homeButton.setOnClickListener {
-            startActivity(HOME)
-        }
-        binding.underbar.myPageButton.setOnClickListener {
-            startActivity(MYPAGE)
-        }
+        binding.underbar.homeButton.setOnClickListener { startActivity(HOME) }
+        binding.underbar.myPageButton.setOnClickListener { startActivity(MYPAGE) }
     }
 
     private fun loadUserNickname() {
@@ -61,8 +71,6 @@ class MypageActivity : AppCompatActivity() {
                 }
             })
     }
-
-
 
     private fun setupViewPager() {
         viewPagerAdapter = MypageViewPagerAdapter(this)
