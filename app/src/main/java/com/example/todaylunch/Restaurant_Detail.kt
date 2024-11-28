@@ -285,7 +285,7 @@ class Restaurant_Detail : AppCompatActivity() {
                 val averageRating = ratingSnapshot.getValue(Float::class.java) ?: 0f
                 binding.ratingBar.rating = averageRating // RatingBar 업데이트
             }
-            .addOnFailureListener { exception ->ㅅ
+            .addOnFailureListener { exception ->
                 Log.e("Restaurant_Detail", "Error loading rating", exception)
             }
     }
