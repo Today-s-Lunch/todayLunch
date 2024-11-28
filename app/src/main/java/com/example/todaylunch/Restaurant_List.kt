@@ -128,7 +128,7 @@ class Restaurant_List : AppCompatActivity() {
     }
 
     private fun setupSortSpinner(sortSpinner: Spinner) {
-        val sortOptions = listOf("이름 순", "거리 순")
+        val sortOptions = listOf("이름순", "거리순","별점순")
 
         // Spinner와 연결할 ArrayAdapter 생성
         val spinnerAdapter = ArrayAdapter(
@@ -162,6 +162,9 @@ class Restaurant_List : AppCompatActivity() {
                             distance
                         }
                         Log.d("SortingDebug", "Sorted by Distance: ${FilterList.map { it.Name }}")
+                    }
+                    2 -> { // 별점순
+                        FilterList.sortByDescending { it.rating }
                     }
                 }
                 updateRecyclerView(FilterList)
@@ -591,7 +594,8 @@ class Restaurant_List : AppCompatActivity() {
         val menuKeywords: String = "",
         val photourl: String = "",
         val type: String = "",
-        val Number: String = ""
+        val Number: String = "",
+        var rating: Float = 0f // 평균 별점 추가
     )
     //ORSM이용??
     /*private fun getWalkingTimeFromOSRM(
