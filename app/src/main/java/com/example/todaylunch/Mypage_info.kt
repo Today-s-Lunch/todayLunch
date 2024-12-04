@@ -54,6 +54,8 @@ class Mypage_info : Fragment() {
         // 정보 수정 버튼 클릭 리스너
         binding.editInfoBtn.setOnClickListener {
             // 정보 수정 화면으로 이동하는 코드 구현
+            val intent = Intent(requireActivity(), MyinfoModify::class.java)
+            startActivity(intent)
         }
     }
 
