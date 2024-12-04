@@ -242,9 +242,11 @@ class Restaurant_Detail : AppCompatActivity() {
                     binding.reviewMore.visibility = View.GONE
                     binding.noReviewText.visibility = View.VISIBLE
                     binding.noReviewText.text = "아직 작성된 리뷰가 없습니다."
+                    binding.ratingBar.rating = 0f
                     return@addOnSuccessListener
                 }
 
+                // 리뷰 데이터 처리
                 restaurantReviews.children.forEach { reviewSnapshot ->
                     val review = reviewSnapshot.value as Map<*, *>
                     val userId = review["userId"] as String
@@ -275,6 +277,16 @@ class Restaurant_Detail : AppCompatActivity() {
             .addOnFailureListener { exception ->
                 Log.e("Restaurant_Detail", "Error loading reviews", exception)
                 Toast.makeText(this, "리뷰를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+            }
+
+        // restaurants/restaurantId/rating 경로에서 평균 별점 가져오기
+        db.child("restaurants").child(restaurantId).child("rating").get()
+            .addOnSuccessListener { ratingSnapshot ->
+                val averageRating = ratingSnapshot.getValue(Float::class.java) ?: 0f
+                binding.ratingBar.rating = averageRating // RatingBar 업데이트
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Restaurant_Detail", "Error loading rating", exception)
             }
     }
 
@@ -324,4 +336,5 @@ class Restaurant_Detail : AppCompatActivity() {
             else R.drawable.scrap_off
         )
     }
+
 }

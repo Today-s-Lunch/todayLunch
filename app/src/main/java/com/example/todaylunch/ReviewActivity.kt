@@ -7,8 +7,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.todaylunch.databinding.ActivityReviewBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -65,6 +68,7 @@ class ReviewActivity : AppCompatActivity() {
             }
 
             submitReview(user.uid, rating, review)
+            updateRestaurantRating(restaurantId.toString())
         }
     }
 
@@ -119,5 +123,39 @@ class ReviewActivity : AppCompatActivity() {
                 Log.e(TAG, "리뷰 데이터 저장 실패 - Restaurant: $restaurantName", e)
                 Toast.makeText(this, "리뷰 등록에 실패했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+    }
+    private fun updateRestaurantRating(restaurantId: String) { //별점 수정
+        val reviewsRef = FirebaseDatabase.getInstance().reference.child("reviews").child(restaurantId)
+        val restaurantRef = FirebaseDatabase.getInstance().reference.child("restaurants").child(restaurantId)
+
+        reviewsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var totalRating = 0.0
+                var reviewCount = 0
+
+                // 모든 리뷰의 rating 값 합산
+                for (reviewSnapshot in snapshot.children) {
+                    val rating = reviewSnapshot.child("rating").getValue(Float::class.java) ?: 0f
+                    totalRating += rating
+                    reviewCount++
+                }
+
+                // 평균 별점 계산
+                val averageRating = if (reviewCount > 0) totalRating / reviewCount else 0.0
+
+                // restaurants 노드에 평균 별점 업데이트
+                restaurantRef.child("rating").setValue(averageRating)
+                    .addOnSuccessListener {
+                        Log.d("UpdateRating", "Rating updated for restaurant $restaurantId: $averageRating")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("UpdateRating", "Failed to update rating: ${e.message}")
+                    }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Failed to fetch reviews: ${error.message}")
+            }
+        })
     }
 }

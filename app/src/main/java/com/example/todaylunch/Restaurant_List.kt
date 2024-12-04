@@ -74,6 +74,7 @@ class Restaurant_List : AppCompatActivity() {
             "avgPrice" to intent.getStringExtra("avgPrice").orEmpty(),
             "waitTime" to intent.getStringExtra("waitTime").orEmpty() // 대기시간 추가
         ).filter { it.value.isNotEmpty() }
+        Log.d("intentDebug", "Received Intent: ${intent.getStringExtra("type")}")
 
         // 입력한 검색어
         searchText = intent.getStringExtra("searchText").orEmpty()
@@ -125,10 +126,17 @@ class Restaurant_List : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.restaurant_list)
         recyclerViewAdapter = RestaurantAdapter(restaurantList)
         recyclerView.adapter = recyclerViewAdapter
+
+        binding.restaurantList.apply {
+            layoutManager = LinearLayoutManager(this@Restaurant_List)
+            adapter = recyclerViewAdapter
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+            isNestedScrollingEnabled = false // 스크롤 충돌 방지
+        }
     }
 
     private fun setupSortSpinner(sortSpinner: Spinner) {
-        val sortOptions = listOf("이름 순", "거리 순")
+        val sortOptions = listOf("이름순", "거리순","별점순")
 
         // Spinner와 연결할 ArrayAdapter 생성
         val spinnerAdapter = ArrayAdapter(
@@ -162,6 +170,9 @@ class Restaurant_List : AppCompatActivity() {
                             distance
                         }
                         Log.d("SortingDebug", "Sorted by Distance: ${FilterList.map { it.Name }}")
+                    }
+                    2 -> { // 별점순
+                        FilterList.sortByDescending { it.rating }
                     }
                 }
                 updateRecyclerView(FilterList)
@@ -345,8 +356,8 @@ class Restaurant_List : AppCompatActivity() {
 
     private fun filterByType(restaurant: Restaurant): Boolean {
         val typeFilter = selectedFilters["type"] ?: return true
+        val selectedTypes = typeFilter.split(",") // 다중 선택 값 처리
 
-        // 조건 필터와 JSON 데이터 값 매핑
         val typeMapping = mapOf(
             "한식" to "Korean",
             "중식" to "Chinese",
@@ -357,15 +368,10 @@ class Restaurant_List : AppCompatActivity() {
             "아시안" to "Vietnamese"
         )
 
-        val mappedType = typeMapping[typeFilter] ?: return true
+        val mappedTypes = selectedTypes.mapNotNull { typeMapping[it] }
 
-        Log.d(
-            "Filtering",
-            "Restaurant: ${restaurant.Name}, Filter: $mappedType, Actual: ${restaurant.type}"
-        )
-
-        // 레스토랑의 type 필드가 필터 값과 일치하는지 확인
-        return restaurant.type.trim().equals(mappedType, ignoreCase = true)
+        // 레스토랑의 type 값이 선택된 타입 중 하나와 일치하면 true 반환
+        return mappedTypes.any { it.equals(restaurant.type.trim(), ignoreCase = true) }
     }
 
 
@@ -506,41 +512,39 @@ class Restaurant_List : AppCompatActivity() {
     }
 
     private fun displayFilters(selectedFilters: Map<String, String>) {
+
         val flexboxLayout = binding.filterConditions
-        flexboxLayout.removeAllViews() // 기존 필터 초기화
+        flexboxLayout.removeAllViews() // 기존 버튼 초기화
 
+        // 조건별로 동적 버튼 생성
         for ((key, value) in selectedFilters) {
-            Log.d("IntentDebug", "Key: $key, Value: $value")
+            if (value.isNullOrEmpty()) continue // 값이 없으면 스킵
 
-            val button = MaterialButton(this).apply {
-                layoutParams = ViewGroup.MarginLayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, // 너비를 70dp로 설정
-                    dpToPx(38)
-                ).apply {
-                    setMargins(dpToPx(4), dpToPx(4), dpToPx(4), dpToPx(4)) // 버튼 간격
+            // 조건 값으로 버튼 생성 (쉼표로 구분된 값 처리)
+            val values = value.split(",")
+            for (item in values) {
+                val button = MaterialButton(this).apply {
+                    layoutParams = ViewGroup.MarginLayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        dpToPx(38)
+                    ).apply {
+                        setMargins(dpToPx(4), dpToPx(4), dpToPx(4), dpToPx(4)) // 버튼 간격
+                    }
+                    text = item // 조건값만 버튼에 표시
+                    setTextColor(getColor(android.R.color.black))
+
+                    // 버튼 스타일 설정
+                    strokeColor = getColorStateList(R.color.red1)
+                    strokeWidth = 2
+                    backgroundTintList = getColorStateList(R.color.selectedButtonTint)
+                    shapeAppearanceModel = shapeAppearanceModel.toBuilder()
+                        .setAllCornerSizes(40f)
+                        .build()
+
+
                 }
-                text = value // 필터 조건 텍스트 설정
-                setTextColor(getColor(android.R.color.black)) // 버튼 텍스트 색상
-
-                // 스타일 적용 (배경색 및 코너 반경)
-
-
-
-                strokeColor =getColorStateList(R.color.red1)
-                strokeWidth= (2).toInt()
-                backgroundTintList = getColorStateList(R.color.selectedButtonTint)
-                shapeAppearanceModel = shapeAppearanceModel.toBuilder()
-                    .setAllCornerSizes(40f) // 모서리 둥글게
-                    .build()
-
-                // 버튼 클릭 시 동작 (필요 시 필터 제거)
-                //setOnClickListener {
-                  //  removeFilter(key)
-                   // displayFilters(selectedFilters) // 버튼 재표시
-                    //loadRestaurants() // 필터 변경 후 데이터 갱신
-               // }
+                flexboxLayout.addView(button) // 버튼 추가
             }
-            flexboxLayout.addView(button)
         }
     }
     private fun dpToPx(dp: Int): Int {
@@ -591,7 +595,8 @@ class Restaurant_List : AppCompatActivity() {
         val menuKeywords: String = "",
         val photourl: String = "",
         val type: String = "",
-        val Number: String = ""
+        val Number: String = "",
+        var rating: Float = 0f // 평균 별점 추가
     )
     //ORSM이용??
     /*private fun getWalkingTimeFromOSRM(
