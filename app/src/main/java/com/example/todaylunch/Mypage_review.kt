@@ -195,6 +195,15 @@ class ReviewAdapter : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
                     }
                     root.context.startActivity(intent)
                 }
+                deleteButton.setOnClickListener {
+                    val position = adapterPosition
+                    if (position != RecyclerView.NO_POSITION) { // 유효한 position인지 확인
+                        val review = reviews[position]
+                        deleteReview(review.restaurantId, review.reviewId, position)
+                    } else {
+                        Log.e("DeleteReview", "Invalid adapter position")
+                    }
+                }
             }
         }
     }
@@ -213,6 +222,80 @@ class ReviewAdapter : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
     }
 
     override fun getItemCount() = reviews.size
+    private fun deleteReview(restaurantId: String, reviewId: String, position: Int) {
+        val databaseRef = FirebaseDatabase.getInstance().reference
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (userId.isNullOrEmpty()) {
+            Log.e("DeleteReview", "사용자 정보 없음")
+            return
+        }
+
+        val reviewsRef = databaseRef.child("reviews").child(restaurantId).child(reviewId)
+        val userReviewsRef = databaseRef.child("user_reviews").child(userId).child(restaurantId).child(reviewId)
+
+        // Firebase에서 삭제
+        reviewsRef.removeValue()
+            .addOnSuccessListener {
+                userReviewsRef.removeValue()
+                    .addOnSuccessListener {
+                        Log.d("DeleteReview", "리뷰 삭제 성공")
+                        removeItem(position)
+                        updateRestaurantRating(restaurantId)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("DeleteReview", "user_reviews 삭제 실패: ${e.message}")
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("DeleteReview", "reviews 삭제 실패: ${e.message}")
+            }
+    }
+    fun removeItem(position: Int) {
+        if (position in reviews.indices) {
+            val updatedList = reviews.toMutableList()
+            updatedList.removeAt(position)
+            reviews = updatedList
+            notifyItemRemoved(position)
+
+            // 리스트가 비어있으면 UI 갱신
+
+        }
+    }
+    private fun updateRestaurantRating(restaurantId: String) {
+        val reviewsRef = FirebaseDatabase.getInstance().reference.child("reviews").child(restaurantId)
+        val restaurantRef = FirebaseDatabase.getInstance().reference.child("restaurants").child(restaurantId)
+
+        reviewsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var totalRating = 0.0
+                var reviewCount = 0
+
+                // 모든 리뷰의 rating 값 합산
+                for (reviewSnapshot in snapshot.children) {
+                    val rating = reviewSnapshot.child("rating").getValue(Float::class.java) ?: 0f
+                    totalRating += rating
+                    reviewCount++
+                }
+
+                // 평균 별점 계산
+                val averageRating = if (reviewCount > 0) totalRating / reviewCount else 0.0
+
+                // restaurants 노드에 평균 별점 업데이트
+                restaurantRef.child("rating").setValue(averageRating)
+                    .addOnSuccessListener {
+                        Log.d("UpdateRating", "Rating updated for restaurant $restaurantId: $averageRating")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("UpdateRating", "Failed to update rating: ${e.message}")
+                    }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Failed to fetch reviews: ${error.message}")
+            }
+        })
+    }
 
     fun submitList(newList: List<Review>) {
         reviews = newList
