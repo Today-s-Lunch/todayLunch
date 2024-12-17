@@ -119,6 +119,7 @@ class SearchActivity : AppCompatActivity() {
         } else {
             selectedCriteria[key] = currentSelection.joinToString(",")
         }
+        updateRecommendationText() // 조건 업데이트
     }
 
     private fun handleSingleSelection(group: ViewGroup, selectedButton: MaterialButton, key: String) {
@@ -140,6 +141,25 @@ class SearchActivity : AppCompatActivity() {
             selectedButton.setTextColor(resources.getColor(android.R.color.black, null))
             selectedCriteria[key] = selectedButton.text.toString()
         }
+        updateRecommendationText() // 조건 업데이트
+    }
+    private fun updateRecommendationText() {
+        val recommendationText = if (selectedCriteria.isNotEmpty()) {
+            selectedCriteria.entries.joinToString(", ") { (key, value) ->
+                when (key) {
+                    "type" -> "종류: $value"
+                    "distance" -> "거리: $value"
+                    "cookingTime" -> "조리시간: $value"
+                    "avgPrice" -> "가격대: $value"
+                    "waitTime" -> "대기시간: $value"
+                    else -> ""
+                }
+            }
+        } else {
+            "딱 맞는 메뉴를 추천해드려요"
+        }
+
+        binding.textView.text = recommendationText
     }
 
     private fun setupSearchButtonListener() {
@@ -161,5 +181,6 @@ class SearchActivity : AppCompatActivity() {
         clearIntentData() // Intent 초기화
         resetAllSelections() // 조건 초기화
         binding.searchEditText.setText("") // 검색어 초기화
+        binding.textView.text="딱 맞는 메뉴를 추천해드려요"
     }
 }
