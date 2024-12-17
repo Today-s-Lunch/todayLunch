@@ -34,37 +34,37 @@
         android:id="@+id/koreanmenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="koreanmenu"
-        android:textSize="20sp"
+        android:text="설렁탕* 소면사리\n잡곡밥\n순대야채볶음\n파래김구이*양념장\n봄동겉절이\n깍두기\n매실에이드\n숭늉*현미밥"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/imageView5"
         app:layout_constraintEnd_toEndOf="@+id/imageView5"
-        app:layout_constraintHorizontal_bias="0.087"
+        app:layout_constraintHorizontal_bias="0.139"
         app:layout_constraintStart_toStartOf="@+id/imageView5"
         app:layout_constraintTop_toTopOf="@+id/imageView5"
-        app:layout_constraintVertical_bias="0.247" />
+        app:layout_constraintVertical_bias="0.538" />
 
     <TextView
         android:id="@+id/koreancost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="cost"
+        android:text="6500원"
         android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView5"
         app:layout_constraintEnd_toEndOf="@+id/imageView5"
-        app:layout_constraintHorizontal_bias="0.909"
+        app:layout_constraintHorizontal_bias="0.918"
         app:layout_constraintStart_toStartOf="@+id/imageView5"
         app:layout_constraintTop_toTopOf="@+id/imageView5"
-        app:layout_constraintVertical_bias="0.883" />
+        app:layout_constraintVertical_bias="0.818" />
 
     <TextView
         android:id="@+id/westmenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginBottom="140dp"
-        android:text="westmenu"
-        android:textSize="20sp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="20dp"
+        android:text="뚝배기소불고기\n잡곡밥\n숙주나물\n봄동겉절이\n깍두기\n안흥찐빵\n매실에이드\n승늉*현미밥"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/imageView8"
         app:layout_constraintStart_toStartOf="@+id/imageView8" />
 
@@ -73,15 +73,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="72dp"
-        android:text="cost"
+        android:text="6500원"
         android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView8"
         app:layout_constraintEnd_toEndOf="@+id/imageView8"
-        app:layout_constraintHorizontal_bias="0.908"
+        app:layout_constraintHorizontal_bias="0.918"
         app:layout_constraintStart_toStartOf="@+id/imageView8"
         app:layout_constraintTop_toBottomOf="@+id/imageView5"
-        app:layout_constraintVertical_bias="0.751" />
+        app:layout_constraintVertical_bias="0.681" />
 
     <ImageView
         android:id="@+id/imageView9"
