@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="작성한 리뷰가 식당이 없습니다."
+        android:text="작성한 리뷰가 없습니다."
         android:textSize="16sp"
         android:visibility="gone" />
 
