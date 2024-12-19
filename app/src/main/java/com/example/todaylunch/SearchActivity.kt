@@ -174,14 +174,24 @@ class SearchActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
+
     override fun onResume() {
         super.onResume()
 
-//        // 액티비티가 다시 활성화될 때 초기화
-        clearIntentData() // Intent 초기화
-        resetAllSelections() // 조건 초기화
-        binding.searchEditText.setText("") // 검색어 초기화
-        binding.textView.text="딱 맞는 메뉴를 추천해드려요"
+        // Intent로 전달된 플래그 확인
+        val shouldReset = intent?.getBooleanExtra("shouldReset", false) ?: false
+
+        if (shouldReset) {
+            clearIntentData() // 이전 Intent 데이터 초기화
+            resetAllSelections() // 조건 초기화
+            binding.searchEditText.setText("") // 검색어 초기화
+            binding.textView.text = "딱 맞는 메뉴를 추천해드려요"
+
+            // 조건이 초기화되었음을 표시하기 위해 플래그를 false로 변경
+            intent.putExtra("shouldReset", false)
+        }
+//
 //        if (intent.getBooleanExtra("shouldReset", false)) {
 //            clearIntentData()
 //            resetAllSelections()
