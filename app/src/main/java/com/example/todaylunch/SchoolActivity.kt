@@ -55,7 +55,10 @@ class SchoolActivity : AppCompatActivity() {
         }
 
         binding.underbar.myPageButton.setOnClickListener {
-            startActivity(goToStartActivity)
+            val MYPAGE = Intent(this, MypageActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            startActivity(MYPAGE)
         }
     }
 
