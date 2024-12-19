@@ -98,6 +98,7 @@ class Restaurant_List : AppCompatActivity() {
         binding.searchopen.setOnClickListener {
             val intent = Intent(this, SearchActivity::class.java).apply {
                 // 검색어 전달
+                putExtra("shouldReset", false)
                 putExtra("currentSearchText", searchText)
                 putExtra("type", selectedFilters["type"].orEmpty())
                 putExtra("distance", selectedFilters["distance"].orEmpty())
