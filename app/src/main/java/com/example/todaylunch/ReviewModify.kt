@@ -9,12 +9,17 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.todaylunch.databinding.ActivityReviewModifyBinding
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class ReviewModify : AppCompatActivity() {
     private lateinit var binding: ActivityReviewModifyBinding
@@ -69,7 +74,10 @@ class ReviewModify : AppCompatActivity() {
             val newRating = binding.ratingBar.rating
             val newContent = binding.reviewEditText.text.toString().trim()
             updateReview(newRating, newContent)
-            updateRestaurantRating(restaurantId.toString())
+            lifecycleScope.launch {
+                updateRestaurantRating(restaurantId.toString())
+            }
+
         }
 
         // 언더바 버튼 동작 설정
@@ -113,38 +121,35 @@ class ReviewModify : AppCompatActivity() {
                 Toast.makeText(this, "리뷰 수정에 실패했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
-    private fun updateRestaurantRating(restaurantId: String) {
+    private suspend fun updateRestaurantRating(restaurantId: String) {
         val reviewsRef = FirebaseDatabase.getInstance().reference.child("reviews").child(restaurantId)
         val restaurantRef = FirebaseDatabase.getInstance().reference.child("restaurants").child(restaurantId)
 
-        reviewsRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                var totalRating = 0.0
-                var reviewCount = 0
+        try {
+            // Firebase 데이터를 비동기로 가져오기
+            val snapshot = withContext(Dispatchers.IO) { reviewsRef.get().await() }
 
-                // 모든 리뷰의 rating 값 합산
-                for (reviewSnapshot in snapshot.children) {
-                    val rating = reviewSnapshot.child("rating").getValue(Float::class.java) ?: 0f
-                    totalRating += rating
-                    reviewCount++
-                }
+            var totalRating = 0.0
+            var reviewCount = 0
 
-                // 평균 별점 계산
-                val averageRating = if (reviewCount > 0) totalRating / reviewCount else 0.0
-
-                // restaurants 노드에 평균 별점 업데이트
-                restaurantRef.child("rating").setValue(averageRating)
-                    .addOnSuccessListener {
-                        Log.d("UpdateRating", "Rating updated for restaurant $restaurantId: $averageRating")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("UpdateRating", "Failed to update rating: ${e.message}")
-                    }
+            // 모든 리뷰의 rating 값 합산
+            for (reviewSnapshot in snapshot.children) {
+                val rating = reviewSnapshot.child("rating").getValue(Float::class.java) ?: 0f
+                totalRating += rating
+                reviewCount++
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("FirebaseError", "Failed to fetch reviews: ${error.message}")
+            // 평균 별점 계산
+            val averageRating = if (reviewCount > 0) totalRating / reviewCount else 0.0
+
+            // restaurants 노드에 평균 별점 업데이트
+            withContext(Dispatchers.IO) {
+                restaurantRef.child("rating").setValue(averageRating).await()
             }
-        })
+
+            Log.d("UpdateRating", "Rating updated for restaurant $restaurantId: $averageRating")
+        } catch (e: Exception) {
+            Log.e("UpdateRating", "Failed to update rating: ${e.message}")
+        }
     }
 }

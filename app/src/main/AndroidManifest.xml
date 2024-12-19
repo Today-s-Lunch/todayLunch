@@ -55,7 +55,8 @@
             android:exported="false" />
         <activity
             android:name=".Restaurant_Detail"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop"/>
         <activity
             android:name=".SchoolActivity"
             android:exported="false"

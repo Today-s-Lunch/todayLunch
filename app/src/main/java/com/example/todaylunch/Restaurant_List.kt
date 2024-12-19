@@ -29,7 +29,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,7 +41,7 @@ import android.content.pm.PackageManager
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.AdapterView
-
+import com.google.firebase.database.DatabaseReference
 
 
 class Restaurant_List : AppCompatActivity() {
@@ -313,21 +313,17 @@ class Restaurant_List : AppCompatActivity() {
 
 
     private fun loadRestaurants() {
-        if (!::selectedFilters.isInitialized) {
-            Log.e("Error", "selectedFilters is not initialized")
-            return
-        }
-
-        displayFilters(selectedFilters)
-        val db = FirebaseDatabase.getInstance().getReference("restaurants")
-        db.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val restaurants = snapshot.children.mapNotNull { restaurantSnapshot ->
-                    restaurantSnapshot.getValue(Restaurant::class.java)
+        lifecycleScope.launch {
+            val db = FirebaseDatabase.getInstance().getReference("restaurants")
+            try {
+                // Firebase에서 데이터를 비동기로 가져오기
+                val restaurants = withContext(Dispatchers.IO) {
+                    fetchRestaurantsFromFirebase(db)
                 }
-                // 필터 적용 및 RecyclerView 업데이트
-                lifecycleScope.launch {
-                    val filteredList = restaurants.filter { restaurant ->
+
+                // 필터를 적용하고 RecyclerView 업데이트
+                val filteredList = withContext(Dispatchers.Default) {
+                    restaurants.filter { restaurant ->
                         filterByType(restaurant) &&
                                 filterByCookingTime(restaurant) &&
                                 filterByPrice(restaurant) &&
@@ -335,28 +331,32 @@ class Restaurant_List : AppCompatActivity() {
                                 filterByDistance(restaurant) &&
                                 filterBySearchText(restaurant)
                     }
-                    Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
-
-                    val adapter = RestaurantAdapter(filteredList)
-                    FilterList= filteredList.toMutableList()
-                    FilterList.sortBy{it.Name}
-                    updateRecyclerView(FilterList)//초깃값 이름순으로 하기 위해
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("FirebaseError", error.message)
+                Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
+
+                FilterList = filteredList.toMutableList()
+                FilterList.sortBy { it.Name } // 초깃값 이름순 정렬
+                updateRecyclerView(FilterList)
+
+            } catch (e: Exception) {
+                Log.e("LoadError", "Failed to load restaurants: ${e.message}")
             }
-        })
+        }
+    }
+
+
+    private suspend fun fetchRestaurantsFromFirebase(db: DatabaseReference): List<Restaurant> {
+        return withContext(Dispatchers.IO) {
+            val snapshot = db.get().await() // await를 활용해 데이터를 기다립니다
+            snapshot.children.mapNotNull { it.getValue(Restaurant::class.java) }
+        }
     }
 
     private fun updateRecyclerView(filteredList: List<Restaurant>) {
-        val adapter = RestaurantAdapter(filteredList)
-        binding.restaurantList.apply {
-            layoutManager = LinearLayoutManager(this@Restaurant_List)
-
-            this.adapter = adapter
-            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        lifecycleScope.launch(Dispatchers.Main) {
+            recyclerViewAdapter.updateList(filteredList)
+            Log.d("AdapterDebug", "RecyclerView updated with filtered list size: ${filteredList.size}")
         }
     }
 
