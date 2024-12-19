@@ -134,8 +134,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val useTestLocation = true // 테스트 좌표 사용 여부
 
         if (useTestLocation) {
-            val testLat = 37.544679 // 숙대입구역
-            val testLng = 126.970884
+            val testLat = 37.544997 // 숙대입구역
+            val testLng = 126.965905
             Log.d("TestLocation", "Using test location: ($testLat, $testLng)")
             fetchNearbyRestaurants(testLat, testLng)
         } else {

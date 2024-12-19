@@ -266,8 +266,8 @@ class Restaurant_List : AppCompatActivity() {
         }
     }
     private fun setMockLocation() { // 수동위치
-        userLat = 37.545317// 숙대좌표
-        userLon =126.965653
+        userLat = 37.544997// 숙대좌표
+        userLon = 126.965905
         Log.d("MockLocation", "Lat: $userLat, Lon: $userLon")
         loadRestaurants()
     }
