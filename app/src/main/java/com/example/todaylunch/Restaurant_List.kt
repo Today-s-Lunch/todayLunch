@@ -104,7 +104,10 @@ class Restaurant_List : AppCompatActivity() {
                 putExtra("cookingTime", selectedFilters["cookingTime"].orEmpty())
                 putExtra("avgPrice", selectedFilters["avgPrice"].orEmpty())
                 putExtra("waitTime", selectedFilters["waitTime"].orEmpty())
+                putExtra("shouldReset", false) // 플래그 추가
             }
+
+
             startActivity(intent)
         }
 
@@ -112,7 +115,10 @@ class Restaurant_List : AppCompatActivity() {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
 
-        binding.underbar.backButton.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        binding.underbar.backButton.setOnClickListener {
+
+            onBackPressedDispatcher.onBackPressed()
+        }
         binding.underbar.homeButton.setOnClickListener {
             startActivity(Intent(this, StartActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
