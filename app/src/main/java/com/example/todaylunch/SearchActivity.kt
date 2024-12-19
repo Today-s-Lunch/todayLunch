@@ -10,8 +10,6 @@ import com.example.todaylunch.databinding.ActivitySearchBinding
 import com.google.android.material.button.MaterialButton
 
 class SearchActivity : AppCompatActivity() {
-
-
     private lateinit var binding: ActivitySearchBinding
     private var selectedCriteria: MutableMap<String, String> = mutableMapOf()
 
@@ -20,35 +18,36 @@ class SearchActivity : AppCompatActivity() {
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 기존 인텐트 데이터 초기화
-        clearIntentData()
-
-        // 버튼 리스너 및 검색 설정
-        setupButtonListeners()
-        setupSearchButtonListener()
-        resetAllSelections()
-
-        // 닫기 버튼
-        binding.closebutton.setOnClickListener {
-            finish()
-        }
-
-        // 이전 검색어 초기화
         val currentSearchText = intent.getStringExtra("currentSearchText") ?: ""
         binding.searchEditText.setText(currentSearchText)
         if (currentSearchText.isNotEmpty()) {
             binding.searchEditText.setSelection(currentSearchText.length)
         }
+
+        // 기존 인텐트 데이터 초기화
+//        clearIntentData()
+
+        // 버튼 리스너 및 검색 설정
+        setupButtonListeners()
+        setupSearchButtonListener()
+//        resetAllSelections()
+
+        restoreFilterConditions()
+
+        // 닫기 버튼
+        binding.closebutton.setOnClickListener {
+            finish()
+        }
     }
 
     private fun clearIntentData() {
         // 이전 Intent Extras를 초기화
-        intent.removeExtra("type")
-        intent.removeExtra("distance")
-        intent.removeExtra("cookingTime")
-        intent.removeExtra("avgPrice")
-        intent.removeExtra("waitTime")
-        intent.removeExtra("currentSearchText")
+//        intent.removeExtra("type")
+//        intent.removeExtra("distance")
+//        intent.removeExtra("cookingTime")
+//        intent.removeExtra("avgPrice")
+//        intent.removeExtra("waitTime")
+//        intent.removeExtra("currentSearchText")
 
         selectedCriteria.clear() // 선택된 조건 초기화
     }
@@ -177,10 +176,62 @@ class SearchActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        // 액티비티가 다시 활성화될 때 초기화
-        clearIntentData() // Intent 초기화
-        resetAllSelections() // 조건 초기화
-        binding.searchEditText.setText("") // 검색어 초기화
-        binding.textView.text="딱 맞는 메뉴를 추천해드려요"
+//        // 액티비티가 다시 활성화될 때 초기화
+//        clearIntentData() // Intent 초기화
+//        resetAllSelections() // 조건 초기화
+//        binding.searchEditText.setText("") // 검색어 초기화
+//        binding.textView.text="딱 맞는 메뉴를 추천해드려요"
+        if (intent.getBooleanExtra("shouldReset", false)) {
+            clearIntentData()
+            resetAllSelections()
+            binding.searchEditText.setText("")
+            binding.textView.text = "딱 맞는 메뉴를 추천해드려요"
+        }
+    }
+
+    private fun restoreFilterConditions() {
+        val previousType = intent.getStringExtra("type")?.takeIf { it.isNotEmpty() }?.split(",") ?: listOf()
+        val previousDistance = intent.getStringExtra("distance")?.takeIf { it.isNotEmpty() }
+        val previousCookingTime = intent.getStringExtra("cookingTime")?.takeIf { it.isNotEmpty() }
+        val previousPrice = intent.getStringExtra("avgPrice")?.takeIf { it.isNotEmpty() }
+        val previousWaitTime = intent.getStringExtra("waitTime")?.takeIf { it.isNotEmpty() }
+
+        val buttonGroups = listOf(
+            binding.typeOptions to previousType,
+            binding.distanceOptions to listOf(previousDistance),
+            binding.cookingTimeOptions to listOf(previousCookingTime),
+            binding.priceOptions to listOf(previousPrice),
+            binding.waitTimeOptions to listOf(previousWaitTime)
+        )
+
+        for ((group, selectedValues) in buttonGroups) {
+            for (i in 0 until group.childCount) {
+                val button = group.getChildAt(i) as MaterialButton
+                val buttonText = button.text.toString()
+
+                if (selectedValues.contains(buttonText)) {
+                    button.tag = true
+                    button.backgroundTintList = resources.getColorStateList(R.color.selectedButtonTint, null)
+                    button.setTextColor(resources.getColor(android.R.color.black, null))
+
+                    when (group) {
+                        binding.typeOptions -> {
+                            val currentTypes = selectedCriteria["type"]?.split(",")?.toMutableList() ?: mutableListOf()
+                            if (!currentTypes.contains(buttonText)) {
+                                currentTypes.add(buttonText)
+                                selectedCriteria["type"] = currentTypes.joinToString(",")
+                            }
+                        }
+                        binding.distanceOptions -> selectedCriteria["distance"] = buttonText
+                        binding.cookingTimeOptions -> selectedCriteria["cookingTime"] = buttonText
+                        binding.priceOptions -> selectedCriteria["avgPrice"] = buttonText
+                        binding.waitTimeOptions -> selectedCriteria["waitTime"] = buttonText
+                    }
+                }
+            }
+        }
+        if (selectedCriteria.isNotEmpty()) {
+            updateRecommendationText()
+        }
     }
 }
