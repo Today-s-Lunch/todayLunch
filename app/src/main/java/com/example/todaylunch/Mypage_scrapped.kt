@@ -37,16 +37,14 @@ data class Restaurant(
 class Mypage_scrapped : Fragment() {
     private var _binding: FragmentMypageScrappedBinding? = null
     private val binding get() = _binding!!
-    private val scrappedAdapter = ScrappedAdapter()
+    private val scrappedAdapter = ScrappedAdapter(this)
     private val database = FirebaseDatabase.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // 로그 태그
     companion object {
         private const val TAG = "Mypage_scrapped"
     }
 
-    // Fragment의 View를 생성
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -56,24 +54,17 @@ class Mypage_scrapped : Fragment() {
         return binding.root
     }
 
-    // View가 생성된 후 호출되는 메서드
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         loadScrappedRestaurants()
     }
 
-    // 리사이클러뷰 초기 설정(어댑터 연결)
     private fun setupRecyclerView() {
-        binding.recyclerView.apply {
-            adapter = scrappedAdapter
-//            layoutManager = LinearLayoutManager(context)
-//            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
-        }
+        binding.recyclerView.adapter = scrappedAdapter
     }
 
-    //스크랩한 식당이 없을 경우
-    private fun updateEmptyView(isEmpty: Boolean) {
+    internal  fun updateEmptyView(isEmpty: Boolean) {
         if (isEmpty) {
             binding.recyclerView.visibility = View.GONE
             binding.emptyView.visibility = View.VISIBLE
@@ -83,27 +74,22 @@ class Mypage_scrapped : Fragment() {
         }
     }
 
-    // 스크랩된 레스토랑 목록을 불러오는 메서드
     private fun loadScrappedRestaurants() {
-        // 현재 로그인한 사용자 확인
         val currentUser = auth.currentUser?.uid ?: run {
             Log.e(TAG, "로그인된 사용자가 없습니다")
             return
         }
 
-        // user_scraps에서 현재 사용자의 스크랩 목록 가져오기
         database.reference.child("user_scraps").child(currentUser)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    // 스크랩된 레스토랑 ID 목록 가져오기
                     val restaurantIds = snapshot.children
                         .filter { it.getValue(Boolean::class.java) == true }
                         .map { it.key ?: "" }
                         .filter { it.isNotEmpty() }
 
-                    //식당 없을 때 처리
                     if (restaurantIds.isEmpty()) {
-                        updateEmptyView(true)  // 스크랩된 레스토랑이 없는 경우
+                        updateEmptyView(true)
                         scrappedAdapter.submitList(emptyList())
                         return
                     }
@@ -117,13 +103,12 @@ class Mypage_scrapped : Fragment() {
                                 override fun onDataChange(restaurantSnapshot: DataSnapshot) {
                                     val restaurant = restaurantSnapshot.getValue(Restaurant::class.java)
                                     restaurant?.let {
-                                        it.isBookmarked = true  // 스크랩된 항목이므로 true로 설정
+                                        it.isBookmarked = true
                                         restaurants.add(it)
                                     }
 
                                     completedRequests++
                                     if (completedRequests == restaurantIds.size) {
-                                        // 이름순으로 정렬
                                         val sortedList = restaurants.sortedBy { it.Name }
                                         scrappedAdapter.submitList(sortedList)
                                     }
@@ -148,96 +133,99 @@ class Mypage_scrapped : Fragment() {
             })
     }
 
-    // Fragment 파괴 시 바인딩 정리
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
 
-class ScrappedAdapter : RecyclerView.Adapter<ScrappedAdapter.ScrappedViewHolder>() {
-        private var restaurants = listOf<Restaurant>()
 
-        inner class ScrappedViewHolder(private val binding: ItemMypageScrappedBinding) :
-            RecyclerView.ViewHolder(binding.root) {
+class ScrappedAdapter(private val fragment: Mypage_scrapped) : RecyclerView.Adapter<ScrappedAdapter.ScrappedViewHolder>() {
+    private var restaurants = listOf<Restaurant>()
 
-            fun bind(restaurant: Restaurant) {
-                binding.apply {
-                    restaurantName.text = restaurant.Name
-                    cookingTime.text = formatTime(restaurant.maketime)
-                    waitingTime.text = formatTime(restaurant.waittime)
-                    avgprice.text = formatPrice(restaurant.avgcost)
-                    bookmarkIcon.isSelected = restaurant.isBookmarked
+    inner class ScrappedViewHolder(private val binding: ItemMypageScrappedBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
-                    // 아이템 클릭 시 상세 정보로 이동
-                    root.setOnClickListener {
-                        // Intent로 상세 페이지로 이동
-                        val intent = Intent(root.context, Restaurant_Detail::class.java)
-                        // restaurant.Number를 사용하여 해당 레스토랑 정보 전달
-                        intent.putExtra("restaurantId", restaurant.Number)
-                        root.context.startActivity(intent)
-                    }
+        fun bind(restaurant: Restaurant) {
+            binding.apply {
+                restaurantName.text = restaurant.Name
+                cookingTime.text = formatTime(restaurant.maketime)
+                waitingTime.text = formatTime(restaurant.waittime)
+                avgprice.text = formatPrice(restaurant.avgcost)
+                bookmarkIcon.isSelected = restaurant.isBookmarked
 
-                    // 북마크 클릭 시 스크랩 상태 토글
-                    bookmarkIcon.setOnClickListener {
-                        // Firebase에서 스크랩 상태 업데이트
-                        toggleBookmark(restaurant)
-                    }
+                root.setOnClickListener {
+                    val intent = Intent(root.context, Restaurant_Detail::class.java)
+                    intent.putExtra("restaurantId", restaurant.Number)
+                    root.context.startActivity(intent)
+                }
+
+                bookmarkIcon.setOnClickListener {
+                    toggleBookmark(restaurant)
                 }
             }
         }
+    }
 
-        private fun toggleBookmark(restaurant: Restaurant) {
-            val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            val restaurantRef = FirebaseDatabase.getInstance()
-                .reference
-                .child("user_scraps")
-                .child(currentUser)
-                .child(restaurant.Number)
+    private fun toggleBookmark(restaurant: Restaurant) {
+        val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val restaurantRef = FirebaseDatabase.getInstance()
+            .reference
+            .child("user_scraps")
+            .child(currentUser)
+            .child(restaurant.Number)
 
-            restaurantRef.setValue(!restaurant.isBookmarked)
-        }
-
-        // 새로운 ViewHolder 생성
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScrappedViewHolder {
-            val binding = ItemMypageScrappedBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-            return ScrappedViewHolder(binding)
-        }
-
-        // ViewHolder에 데이터 바인딩
-        override fun onBindViewHolder(holder: ScrappedViewHolder, position: Int) {
-            holder.bind(restaurants[position])
-        }
-
-        // 전체 아이템 개수 반환
-        override fun getItemCount() = restaurants.size
-
-        // 새로운 데이터 리스트 설정
-        fun submitList(newList: List<Restaurant>) {
-            restaurants = newList
-            notifyDataSetChanged()
-        }
-
-        // 가격 형식 변환 (예: "5000under" -> "5,000원 이하")
-        private fun formatPrice(price: String): String {
-            return when (price) {
-                "5000under" -> "5,000원 이하"
-                "10000under" -> "10,000원 이하"
-                "10000over" -> "10,000원 이상"
-                else -> price
+        val newBookmarkState = !restaurant.isBookmarked
+        restaurantRef.setValue(newBookmarkState).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                restaurant.isBookmarked = newBookmarkState
+                if (!newBookmarkState) {
+                    val updatedList = restaurants.filter { it.Number != restaurant.Number }
+                    submitList(updatedList)
+                }
+            } else {
+                Log.e("ScrappedAdapter", "북마크 상태 업데이트 실패: ${task.exception?.message}")
             }
         }
+    }
 
-        // 시간 형식 변환 (예: "30m" -> "30분", "45s" -> "45초")
-        private fun formatTime(time: String): String {
-            return when {
-                time.endsWith("s") -> "${time.removeSuffix("s")}초"
-                time.endsWith("m") -> "${time.removeSuffix("m")}분"
-                else -> time
-            }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScrappedViewHolder {
+        val binding = ItemMypageScrappedBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ScrappedViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: ScrappedViewHolder, position: Int) {
+        holder.bind(restaurants[position])
+    }
+
+    override fun getItemCount() = restaurants.size
+
+    fun submitList(newList: List<Restaurant>) {
+        restaurants = newList
+        notifyDataSetChanged()
+
+        // 빈 리스트 상태 확인 후 UI 업데이트
+        fragment.updateEmptyView(restaurants.isEmpty())
+    }
+
+    private fun formatPrice(price: String): String {
+        return when (price) {
+            "5000under" -> "5,000원 이하"
+            "10000under" -> "10,000원 이하"
+            "10000over" -> "10,000원 이상"
+            else -> price
         }
+    }
+
+    private fun formatTime(time: String): String {
+        return when {
+            time.endsWith("s") -> "${time.removeSuffix("s")}초"
+            time.endsWith("m") -> "${time.removeSuffix("m")}분"
+            else -> time
+        }
+    }
 }
