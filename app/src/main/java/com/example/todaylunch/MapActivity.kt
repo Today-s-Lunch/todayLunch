@@ -73,7 +73,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         binding.downbar.myPageButton.setOnClickListener {
-            startActivity(goToStartActivity)
+            val MYPAGE = Intent(this, MypageActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            startActivity(MYPAGE)
         }
         val goTomapActivity = Intent(this, MapActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
