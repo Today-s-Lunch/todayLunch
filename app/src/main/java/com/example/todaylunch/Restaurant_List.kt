@@ -313,6 +313,14 @@ class Restaurant_List : AppCompatActivity() {
 
 
     private fun loadRestaurants() {
+        if (!::selectedFilters.isInitialized) {
+            Log.e("Error", "selectedFilters is not initialized")
+            return
+        }
+
+        // 필터 조건 표시
+        displayFilters(selectedFilters)
+
         lifecycleScope.launch {
             val db = FirebaseDatabase.getInstance().getReference("restaurants")
             try {
@@ -321,7 +329,7 @@ class Restaurant_List : AppCompatActivity() {
                     fetchRestaurantsFromFirebase(db)
                 }
 
-                // 필터를 적용하고 RecyclerView 업데이트
+                // 필터 적용
                 val filteredList = withContext(Dispatchers.Default) {
                     restaurants.filter { restaurant ->
                         filterByType(restaurant) &&
@@ -334,7 +342,6 @@ class Restaurant_List : AppCompatActivity() {
                 }
 
                 Log.d("FilteredList", "Filtered: ${filteredList.map { it.Name }}")
-
                 FilterList = filteredList.toMutableList()
                 FilterList.sortBy { it.Name } // 초깃값 이름순 정렬
                 updateRecyclerView(FilterList)
